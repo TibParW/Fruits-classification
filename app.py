@@ -2,6 +2,8 @@
 app.py
 เว็บแอปพลิเคชัน Gradio สำหรับจำแนกชนิดผลไม้ (Fruit Classifier)
 ดีไซน์แบบ Minimalist สไตล์โมเดิร์น สะอาดตา พร้อมระบบ Auto-Predict
+ขับเคลื่อนด้วย Scikit-Learn Classical Machine Learning แท้ 100%
+จำแนกผลไม้ยอดนิยมและผลไม้ไทยเขตร้อน 21 ชนิด
 """
 
 import os
@@ -19,7 +21,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 # นำเข้าฟังก์ชันดึง Feature และข้อมูลเวอร์ชัน
-from train import extract_features
+from train import extract_fruit_features, extract_features
 from version import __version__, __release_date__
 
 MODEL_FILE = Path("fruit_model.pkl")
@@ -38,7 +40,7 @@ if MODEL_FILE.exists():
 EMPTY_STATE_HTML = """
 <div style="background: var(--card-bg, #ffffff); border: 1px dashed var(--card-border, #cbd5e1); border-radius: 12px; padding: 32px 16px; text-align: center; color: var(--text-body, #334155);">
     <div style="font-size: 2.2rem; margin-bottom: 8px; opacity: 0.9;">🍎🍌🍊🍇🍉🍋🍓🍍🥭🍈🥥🍐🍒🥝🥑</div>
-    <div style="font-size: 1rem; font-weight: 700; color: var(--text-title, #0f172a); margin-bottom: 6px;">พร้อมจำแนกภาพผลไม้ 16 ชนิดยอดนิยม (Machine Learning Model)</div>
+    <div style="font-size: 1rem; font-weight: 700; color: var(--text-title, #0f172a); margin-bottom: 6px;">พร้อมจำแนกภาพผลไม้ 21 ชนิดยอดนิยม (Machine Learning Model)</div>
     <div style="font-size: 0.85rem; color: var(--text-muted, #64748b);">อัปโหลดรูปภาพด้านซ้าย หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อเริ่มการวิเคราะห์ทันที</div>
 </div>
 """
@@ -56,16 +58,18 @@ def auto_center_crop(image: Image.Image, mode: str = "square_1_1") -> Image.Imag
 
     w, h = image.size
 
-    # ตรวจจับและตัดแถบดำ/ขอบมืดรอบนอก (เช่น ขอบจอ iPad, ขอบกรอบสีดำจากการถ่ายหน้าจอ)
+    # ตรวจจับแถบดำ letterbox บริเวณขอบนอกสุด (ขอบมืดสนิท < 18 และ std < 8)
     try:
         arr = np.array(image.convert("RGB"))
         row_means = arr.mean(axis=(1, 2))
         col_means = arr.mean(axis=(0, 2))
+        row_stds = arr.std(axis=(1, 2))
+        col_stds = arr.std(axis=(0, 2))
 
-        # หากขอบภาพด้านใดด้านหนึ่งมืดผิดปกติ (< 45) ซึ่งเกิดจากการถ่ายขอบจอหรือแถบดำ letterbox
-        if row_means[0] < 45 or row_means[-1] < 45 or col_means[0] < 45 or col_means[-1] < 45:
-            valid_rows = np.where(row_means > 45)[0]
-            valid_cols = np.where(col_means > 45)[0]
+        if (row_means[0] < 18 and row_stds[0] < 8) or (row_means[-1] < 18 and row_stds[-1] < 8) or \
+           (col_means[0] < 18 and col_stds[0] < 8) or (col_means[-1] < 18 and col_stds[-1] < 8):
+            valid_rows = np.where(row_means > 20)[0]
+            valid_cols = np.where(col_means > 20)[0]
             if len(valid_rows) > 0 and len(valid_cols) > 0:
                 y0, y1 = valid_rows[0], valid_rows[-1]
                 x0, x1 = valid_cols[0], valid_cols[-1]
@@ -118,12 +122,11 @@ def predict_fruit(image: Image.Image, crop_mode: str = "square_1_1"):
     pipeline = model_data["pipeline"]
     classes = model_data["classes"]
     thai_labels = model_data.get("thai_labels", {})
-    feature_mode = model_data.get("feature_mode", "combined")
-    img_size = model_data.get("img_size", (32, 32))
+    img_size = model_data.get("img_size", (96, 96))
 
-    # สกัดฟีเจอร์จากรูปที่ผ่านการตัดขอบแล้ว
+    # สกัดฟีเจอร์ 190 มิติ จากรูปที่ผ่านการตัดขอบแล้ว
     try:
-        features = extract_features(cropped_image, mode=feature_mode, img_size=img_size)
+        features = extract_fruit_features(cropped_image)
     except Exception as e:
         error_html = f"""
         <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; color: #991b1b; font-size: 0.9rem;">
@@ -132,19 +135,8 @@ def predict_fruit(image: Image.Image, crop_mode: str = "square_1_1"):
         """
         return None, error_html, None, None
 
-    # คำนวณความน่าจะเป็นของแต่ละคลาส (พร้อมระบบ Outlier Clipping ป้องกันค่า z-score ระเบิดจากขอบภาพมืด/ขอบจอคอม)
-    try:
-        scaler = pipeline.named_steps.get("scaler")
-        classifier = pipeline.named_steps.get("classifier")
-        if scaler is not None and classifier is not None:
-            scaled_feat = scaler.transform([features])
-            # ป้องกัน z-score ระเบิดเกิน +/- 3.5 standard deviations (Outlier Safeguard)
-            clipped_feat = np.clip(scaled_feat, -3.5, 3.5)
-            probabilities = classifier.predict_proba(clipped_feat)[0]
-        else:
-            probabilities = pipeline.predict_proba([features])[0]
-    except Exception:
-        probabilities = pipeline.predict_proba([features])[0]
+    # คำนวณความน่าจะเป็นของแต่ละคลาส
+    probabilities = pipeline.predict_proba([features])[0]
     pred_idx = np.argmax(probabilities)
     pred_class = classes[pred_idx]
     pred_confidence = probabilities[pred_idx] * 100
@@ -155,7 +147,7 @@ def predict_fruit(image: Image.Image, crop_mode: str = "square_1_1"):
         display_name = thai_labels.get(cls_name, cls_name.capitalize())
         confidence_dict[display_name] = float(probabilities[idx])
 
-    # ภาพย่อ 32x32 สำหรับเทคนิคการประมวลผล
+    # ภาพย่อ 96x96 สำหรับเทคนิคการประมวลผล
     thumbnail_preview = cropped_image.convert("RGB").resize(img_size)
 
     # ป้ายข้อความระบุโหมดการครอบตัด
@@ -167,12 +159,12 @@ def predict_fruit(image: Image.Image, crop_mode: str = "square_1_1"):
 
     # สร้างการ์ดผลลัพธ์แบบ Dynamic Theme HTML (รองรับทั้ง Light และ Dark mode)
     top_label_th = thai_labels.get(pred_class, pred_class.capitalize())
-    model_type = model_data.get("model_type", "Linear").upper()
+    model_type = model_data.get("model_type", "HistGradientBoostingClassifier").upper()
 
     summary_html = f"""
     <div style="background: var(--card-bg, #ffffff); border: 1px solid var(--card-border, #e2e8f0); border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px -2px rgba(0,0,0,0.06); margin-bottom: 14px;">
         <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted, #64748b); margin-bottom: 4px;">
-            ผลลัพธ์การจำแนก (Prediction)
+            ผลลัพธ์การจำแนก (PREDICTION)
         </div>
         <div style="font-size: 1.65rem; font-weight: 800; color: var(--text-title, #0f172a); margin-bottom: 10px;">
             {top_label_th}
@@ -188,15 +180,12 @@ def predict_fruit(image: Image.Image, crop_mode: str = "square_1_1"):
                 {crop_badge_text}
             </span>
             <span style="background: var(--badge-bg, #f1f5f9); color: var(--badge-text, #334155); font-size: 0.82rem; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--card-border, #e2e8f0);">
-                {img_size[0]}×{img_size[1]} px
+                190 Dims
             </span>
         </div>
     </div>
     """
     return confidence_dict, summary_html, cropped_image, thumbnail_preview
-
-
-
 
 
 # กำหนดสไตล์ Minimalist CSS รองรับทั้ง Light และ Dark Mode
@@ -320,7 +309,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             ระบบจำแนกชนิดผลไม้
         </h1>
         <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0; font-weight: 500;">
-            แบบจำลอง Machine Learning (Scikit-Learn) ผสานการสกัดคุณลักษณะด้วย Color Histograms, Spatial Grid และ Texture
+            แบบจำลอง Machine Learning (Scikit-Learn) ผสานการสกัดคุณลักษณะด้วย Color Histograms, Spatial Grid, Texture (LBP) และ Cavity Detection
         </p>
     </div>
     """)
@@ -332,7 +321,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.9rem; color: var(--text-body); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                 <div>💡 <b style="color: var(--text-title);">วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
                 <div style="font-size: 0.8rem; background: var(--highlight-bg); color: var(--highlight-text); font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(4, 120, 87, 0.2);">
-                    ✨ 16 ชนิดผลไม้ยอดนิยม (Scikit-Learn)
+                    ✨ 21 ชนิดผลไม้ยอดนิยม (Scikit-Learn)
                 </div>
             </div>
             """)
@@ -370,20 +359,25 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                                 interactive=False
                             )
                             output_thumb = gr.Image(
-                                label="ภาพ Thumbnail ที่สกัดฟีเจอร์ (64×64 px)",
+                                label="ภาพ Thumbnail ที่สกัดฟีเจอร์ (96×96 px)",
                                 height=130,
                                 interactive=False
                             )
 
-            # ภาพตัวอย่างสำหรับให้อาจารย์และผู้ใช้ทดสอบทันที (Sample Images)
+            # ภาพตัวอย่างสำหรับให้อาจารย์และผู้ใช้ทดสอบทันที (Sample Images ครบ 21 ชนิด)
             sample_files = [
+                ["sample_images/papaya.jpg", "square_1_1"],
+                ["sample_images/pear.jpg", "square_1_1"],
+                ["sample_images/lychee.jpg", "square_1_1"],
+                ["sample_images/apple.jpg", "square_1_1"],
+                ["sample_images/lemon.jpg", "square_1_1"],
+                ["sample_images/orange.jpg", "square_1_1"],
                 ["sample_images/durian.jpg", "square_1_1"],
                 ["sample_images/mangosteen.jpg", "square_1_1"],
                 ["sample_images/rambutan.jpg", "square_1_1"],
                 ["sample_images/mango.jpg", "square_1_1"],
                 ["sample_images/coconut.jpg", "square_1_1"],
                 ["sample_images/banana.jpg", "square_1_1"],
-                ["sample_images/apple.jpg", "square_1_1"],
                 ["sample_images/strawberry.jpg", "square_1_1"],
                 ["sample_images/watermelon.jpg", "square_1_1"],
                 ["sample_images/passionfruit.jpg", "square_1_1"],
@@ -400,7 +394,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                     gr.Markdown(
                         "<div style='font-size: 0.88rem; color: var(--text-body, #334155); margin-bottom: 8px;'>"
                         "คลิกเลือกภาพผลไม้ตัวอย่างด้านล่างเพื่อทดสอบระบบได้ทันที: "
-                        "<b style='color: var(--text-title, #0f172a);'>ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล • สตรอว์เบอร์รี • แตงโม • เสาวรส • สับปะรด • แก้วมังกร • ขนุน • น้อยหน่า • กระท้อน • ลำไย</b>"
+                        "<b style='color: var(--text-title, #0f172a);'>มะละกอ • สาลี่ • ลิ้นจี่ • แอปเปิ้ล • เลมอน • ส้ม • ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • สตรอว์เบอร์รี • แตงโม • เสาวรส • สับปะรด • แก้วมังกร • ขนุน • น้อยหน่า • กระท้อน • ลำไย</b>"
                         "</div>"
                     )
                     gr.Examples(
@@ -409,7 +403,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                         outputs=[output_label, output_summary, output_cropped, output_thumb],
                         fn=predict_fruit,
                         cache_examples=False,
-                        label="ภาพตัวอย่างผลไม้ (Sample Images)"
+                        label="ภาพตัวอย่างผลไม้ 21 ชนิด (Sample Images)"
                     )
 
             # รองรับทั้งคลิกปุ่ม, เปลี่ยนโหมดตัดขอบ, และ Auto-predict ทันทีที่อัปโหลดรูป
@@ -436,7 +430,6 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                 outputs=[output_label, output_summary, output_cropped, output_thumb]
             )
 
-
         with gr.TabItem("📊 ประสิทธิภาพโมเดล (Metrics)"):
             gr.Markdown("#### 📈 ผลการประเมินโมเดลบน Test Set (Confusion Matrix & Classification Report)")
             with gr.Row():
@@ -459,7 +452,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                     gr.Textbox(
                         value=report_text,
                         label="Classification Report",
-                        lines=14,
+                        lines=18,
                         interactive=False
                     )
 

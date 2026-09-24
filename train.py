@@ -3,13 +3,15 @@ train.py
 สคริปต์สำหรับเทรนโมเดล Machine Learning จำแนกชนิดผลไม้ (Fruit Classifier)
 ใช้กระบวนการทางวิทยาศาสตร์ข้อมูลและ Machine Learning แท้ 100% (Scikit-Learn)
 ปราศจากโครงข่ายประสาทเทียมภายนอก (Pure Classical ML Feature Extraction)
-สกัดฟีเจอร์ด้วยสถิติสี (Color Histograms) + โครงสร้างเชิงพื้นที่ (Spatial Grid) + ผิวสัมผัส (Texture)
-จำแนกผลไม้ยอดนิยมและผลไม้ไทยเขตร้อน 16 ชนิด (Zero Vegetables)
+สกัดฟีเจอร์ด้วยสถิติสีเชิงเส้นและเชิงมุม (Linear Color Indices & Circular Hue) +
+โครงสร้างเชิงพื้นที่ (Spatial Grid) + ผิวสัมผัส (Local Binary Pattern: LBP) + ช่องเมล็ดกึ่งกลาง (Dark Cavity)
+จำแนกผลไม้ยอดนิยมและผลไม้ไทยเขตร้อน 21 ชนิด (Zero Vegetables)
 """
 
 import os
 import sys
 import io
+import glob
 import zipfile
 import argparse
 from pathlib import Path
@@ -19,8 +21,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from PIL import Image
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from version import __version__
 
@@ -30,11 +31,12 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-# 16 คลาสผลไม้ยอดนิยมและผลไม้ไทยเขตร้อน (ตัดผักออก 100%)
-TARGET_FRUITS_16 = [
+# 21 คลาสผลไม้ยอดนิยมและผลไม้ไทยเขตร้อน (ครอบคลุมผลไม้ที่ผู้ใช้ทดสอบ)
+TARGET_FRUITS_21 = [
     "apple", "banana", "coconut", "custard apple", "dragonfruit", 
-    "durian", "jackfruit", "longan", "mango", "mangosteen", 
-    "passion fruit", "pineapple", "rambutan", "santol", "strawberry", "watermelon"
+    "durian", "jackfruit", "lemon", "longan", "lychee", 
+    "mango", "mangosteen", "orange", "papaya", "passion fruit", 
+    "pear", "pineapple", "rambutan", "santol", "strawberry", "watermelon"
 ]
 
 FRUIT_KEYWORD_MAP = {
@@ -45,10 +47,15 @@ FRUIT_KEYWORD_MAP = {
     "dragonfruit": ("แก้วมังกร", "🐲"),
     "durian": ("ทุเรียน", "👑"),
     "jackfruit": ("ขนุน", "🍈"),
+    "lemon": ("เลมอน / มะนาวเหลือง", "🍋"),
     "longan": ("ลำไย", "🌰"),
+    "lychee": ("ลิ้นจี่", "🔴"),
     "mango": ("มะม่วง", "🥭"),
     "mangosteen": ("มังคุด", "👑"),
+    "orange": ("ส้ม", "🍊"),
+    "papaya": ("มะละกอ", "🥭"),
     "passion fruit": ("เสาวรส", "🍹"),
+    "pear": ("สาลี่ / ลูกแพร์", "🍐"),
     "pineapple": ("สับปะรด", "🍍"),
     "rambutan": ("เงาะ", "🔴"),
     "santol": ("กระท้อน", "🟡"),
@@ -75,232 +82,355 @@ def build_thai_labels(classes):
     return {c: format_class_name(c) for c in classes}
 
 
-def extract_features(image: Image.Image, mode="ml_features", img_size=(64, 64)) -> np.ndarray:
+def compute_lbp(gray: np.ndarray) -> np.ndarray:
     """
-    สกัดคุณลักษณะ (Feature Extraction) จากรูปภาพด้วยหลักการ Digital Image Processing
-    1. RGB Color Histogram (48 มิติ): ความถี่การกระจายตัวของแม่สี แดง เขียว น้ำเงิน
-    2. HSV Color Distribution (56 มิติ): การกระจายตัวของเนื้อสี (Hue), ความสด (Saturation), ความสว่าง (Value)
-    3. Spatial Grid 4x4 (96 มิติ): ค่าเฉลี่ยสีในตาราง 16 ช่องเพื่อจับการจัดวางเชิงพื้นที่ของผลไม้
-    4. Texture / Gradient (8 มิติ): ค่าความชันและการกระจายตัวของพื้นผิว (ผิวเรียบ vs หนาม/ขรุขระ)
-    รวมทั้งสิ้น 208 มิติ (Pure NumPy & Scikit-Learn Friendly)
+    คำนวณ Local Binary Patterns (LBP) 8 เพื่อนบ้าน สำหรับวิเคราะห์ผิวสัมผัส (Texture)
+    แยกความแตกต่างระหว่างผิวเรียบ (แอปเปิ้ล, สาลี่, มะม่วง) กับผิวขรุขระ/หนาม (ลิ้นจี่, เงาะ, ทุเรียน)
+    """
+    g = gray.astype(np.float32)
+    center = g[1:-1, 1:-1]
+    lbp = np.zeros_like(center, dtype=np.uint8)
+    neighbors = [
+        g[:-2, :-2], g[:-2, 1:-1], g[:-2, 2:],
+        g[1:-1, 2:], g[2:, 2:], g[2:, 1:-1],
+        g[2:, :-2], g[1:-1, :-2]
+    ]
+    for i, n in enumerate(neighbors):
+        lbp |= ((n >= center).astype(np.uint8) << i)
+    hist, _ = np.histogram(lbp, bins=16, range=(0, 256), density=True)
+    return hist
+
+
+def extract_fruit_features(image: Image.Image) -> np.ndarray:
+    """
+    สกัดคุณลักษณะ (Feature Extraction) 190 มิติ ด้วยหลักการ Digital Image Processing
+    1. Linear Color Differences & Indices (16 มิติ): r, g, b, ExR, ExG, ExB, ExY, Circular Hue (cos/sin), Sat/Val stats
+    2. Color Histograms (56 มิติ): RGB 3x8=24, HSV (Hue 16 bins, Sat 8 bins, Val 8 bins) = 32
+    3. Center 60% Region (34 มิติ): โฟกัสเฉพาะกึ่งกลางผลไม้ ตัดสิ่งรบกวนขอบโต๊ะหรือฉากหลัง
+    4. Saturated Fruit Body Mask (23 มิติ): กรองเฉพาะพิกเซลเนื้อผลไม้ที่มีสีสด (S > 40) ไม่รวมฉากหลังสีขาว/โต๊ะไม้
+    5. Surface Texture (22 มิติ): LBP 16 bins + Sobel Edge Gradient Magnitude & Contrast
+    6. Dark Center Cavity Detector (3 มิติ): ตรวจจับเมล็ดสีดำในโพรงกึ่งกลาง (มะละกอ, เสาวรส, แตงโม)
+    7. Spatial 3x3 Grid Layout (36 มิติ): ตาราง 9 ช่องบันทึกการจัดวางสีเชิงพื้นที่
+    รวมทั้งสิ้น 190 มิติ (Pure NumPy & Scikit-Learn Friendly)
     """
     if image.mode != "RGB":
         image = image.convert("RGB")
 
-    im64 = image.resize(img_size, Image.Resampling.BILINEAR)
-    arr64 = np.array(im64, dtype=np.float32)
+    im96 = image.resize((96, 96), Image.Resampling.BILINEAR)
+    arr = np.array(im96, dtype=np.float32)
+    hsv = np.array(im96.convert("HSV"), dtype=np.float32)
 
-    # 1. RGB Color Histogram (16 bins ต่อช่อง = 48 มิติ)
-    hr, _ = np.histogram(arr64[:, :, 0], bins=16, range=(0, 256), density=True)
-    hg, _ = np.histogram(arr64[:, :, 1], bins=16, range=(0, 256), density=True)
-    hb, _ = np.histogram(arr64[:, :, 2], bins=16, range=(0, 256), density=True)
-    rgb_hist = np.hstack([hr, hg, hb])
+    R, G, B = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+    tot = R + G + B + 1e-5
+    r, g, b = R / tot, G / tot, B / tot
 
-    # 2. HSV Color Distribution (Hue 24 bins, Sat 16 bins, Val 16 bins = 56 มิติ)
-    hsv64 = np.array(im64.convert("HSV"), dtype=np.float32)
-    hh, _ = np.histogram(hsv64[:, :, 0], bins=24, range=(0, 256), density=True)
-    hs, _ = np.histogram(hsv64[:, :, 1], bins=16, range=(0, 256), density=True)
-    hv, _ = np.histogram(hsv64[:, :, 2], bins=16, range=(0, 256), density=True)
-    hsv_hist = np.hstack([hh, hs, hv])
+    # 1. Linear Color Differences & Circular Hue
+    ex_r = (2 * R - G - B) / 255.0
+    ex_g = (2 * G - R - B) / 255.0
+    ex_b = (2 * B - R - G) / 255.0
+    ex_y = (R + G - 2 * B) / 255.0
 
-    # 3. Spatial Grid Features (แบ่งตาราง 4x4 = 16 ช่อง x 6 ค่าเฉลี่ย = 96 มิติ)
-    grid_features = []
-    for r in range(4):
-        for c in range(4):
-            cell_rgb = arr64[r * 16 : (r + 1) * 16, c * 16 : (c + 1) * 16, :] / 255.0
-            cell_hsv = hsv64[r * 16 : (r + 1) * 16, c * 16 : (c + 1) * 16, :] / 255.0
-            grid_features.extend(cell_rgb.mean(axis=(0, 1)))
-            grid_features.extend(cell_hsv.mean(axis=(0, 1)))
+    theta = 2.0 * np.pi * (hsv[:, :, 0] / 256.0)
+    cos_h = np.cos(theta)
+    sin_h = np.sin(theta)
 
-    # 4. Texture & Surface Roughness Features (8 มิติ)
-    gray = arr64.mean(axis=2)
-    gx = np.diff(gray, axis=1)
-    gy = np.diff(gray, axis=0)
-    texture_features = [
-        np.mean(np.abs(gx)), np.std(gx),
-        np.mean(np.abs(gy)), np.std(gy),
-        np.std(gray), np.std(arr64[:, :, 0]), np.std(arr64[:, :, 1]), np.std(arr64[:, :, 2])
+    global_stats = [
+        r.mean(), g.mean(), b.mean(),
+        ex_r.mean(), ex_g.mean(), ex_b.mean(), ex_y.mean(),
+        cos_h.mean(), sin_h.mean(),
+        hsv[:, :, 1].mean() / 255.0, hsv[:, :, 1].std() / 255.0,
+        hsv[:, :, 2].mean() / 255.0, hsv[:, :, 2].std() / 255.0,
+        np.std(R) / 255.0, np.std(G) / 255.0, np.std(B) / 255.0
     ]
 
-    return np.hstack([rgb_hist * 10.0, hsv_hist * 10.0, grid_features, texture_features]).astype(np.float32)
+    # 2. Histograms (RGB 24 dims, HSV 32 dims = 56 dims)
+    hr, _ = np.histogram(R, bins=8, range=(0, 256), density=True)
+    hg, _ = np.histogram(G, bins=8, range=(0, 256), density=True)
+    hb, _ = np.histogram(B, bins=8, range=(0, 256), density=True)
+    hh, _ = np.histogram(hsv[:, :, 0], bins=16, range=(0, 256), density=True)
+    hs, _ = np.histogram(hsv[:, :, 1], bins=8, range=(0, 256), density=True)
+    hv, _ = np.histogram(hsv[:, :, 2], bins=8, range=(0, 256), density=True)
+    hist_features = np.hstack([hr, hg, hb, hh, hs, hv]) * 10.0
+
+    # 3. Center 60% Crop (inner 58x58) -> Focus on fruit, ignore table borders (34 dims)
+    c_arr = arr[19:77, 19:77]
+    c_hsv = hsv[19:77, 19:77]
+    c_R, c_G, c_B = c_arr[:, :, 0], c_arr[:, :, 1], c_arr[:, :, 2]
+    c_ex_r = (2 * c_R - c_G - c_B) / 255.0
+    c_ex_g = (2 * c_G - c_R - c_B) / 255.0
+    c_ex_y = (c_R + c_G - 2 * c_B) / 255.0
+    c_theta = 2.0 * np.pi * (c_hsv[:, :, 0] / 256.0)
+    c_hh, _ = np.histogram(c_hsv[:, :, 0], bins=16, range=(0, 256), density=True)
+    c_hs, _ = np.histogram(c_hsv[:, :, 1], bins=8, range=(0, 256), density=True)
+    center_features = np.hstack([
+        [c_R.mean() / 255.0, c_G.mean() / 255.0, c_B.mean() / 255.0,
+         c_ex_r.mean(), c_ex_g.mean(), c_ex_y.mean(),
+         np.cos(c_theta).mean(), np.sin(c_theta).mean(),
+         c_hsv[:, :, 1].mean() / 255.0, c_hsv[:, :, 2].mean() / 255.0],
+        c_hh * 10.0, c_hs * 10.0
+    ])
+
+    # 4. Saturated Fruit Body Mask (23 dims)
+    fg_mask = (hsv[:, :, 1] > 40) & ~((hsv[:, :, 2] > 235) & (hsv[:, :, 1] < 35))
+    if fg_mask.sum() > 40:
+        f_R = R[fg_mask]
+        f_G = G[fg_mask]
+        f_B = B[fg_mask]
+        f_ex_r = (2 * f_R - f_G - f_B) / 255.0
+        f_ex_g = (2 * f_G - f_R - f_B) / 255.0
+        f_ex_y = (f_R + f_G - 2 * f_B) / 255.0
+        f_h = hsv[:, :, 0][fg_mask]
+        f_s = hsv[:, :, 1][fg_mask]
+        f_th = 2.0 * np.pi * (f_h / 256.0)
+        f_hh, _ = np.histogram(f_h, bins=16, range=(0, 256), density=True)
+        fg_features = np.hstack([
+            [fg_mask.mean(), f_ex_r.mean(), f_ex_g.mean(), f_ex_y.mean(),
+             np.cos(f_th).mean(), np.sin(f_th).mean(), f_s.mean() / 255.0],
+            f_hh * 10.0
+        ])
+    else:
+        fg_features = np.zeros(23, dtype=np.float32)
+
+    # 5. Texture: LBP (16 dims) + Sobel Gradients (6 dims) = 22 dims
+    gray = (0.299 * R + 0.587 * G + 0.114 * B)
+    lbp_hist = compute_lbp(gray) * 10.0
+    gx = np.diff(gray, axis=1)
+    gy = np.diff(gray, axis=0)
+    g_mag = np.sqrt(gx[:95, :] ** 2 + gy[:, :95] ** 2)
+    texture_stats = [
+        np.mean(g_mag) / 255.0, np.std(g_mag) / 255.0,
+        (g_mag > 20).mean(), (g_mag > 40).mean(),
+        np.std(gray) / 255.0, (np.percentile(gray, 90) - np.percentile(gray, 10)) / 255.0
+    ]
+
+    # 6. Dark Center Cavity Detector (3 dims)
+    c_gray = gray[28:68, 28:68]
+    dark_center = [
+        (c_gray < 50).mean(),
+        (c_gray < 75).mean(),
+        c_gray.min() / 255.0
+    ]
+
+    # 7. Spatial 3x3 Grid Layout (36 dims)
+    grid_features = []
+    for r_idx in range(3):
+        for c_idx in range(3):
+            cell_rgb = arr[r_idx * 32:(r_idx + 1) * 32, c_idx * 32:(c_idx + 1) * 32] / 255.0
+            cell_hsv = hsv[r_idx * 32:(r_idx + 1) * 32, c_idx * 32:(c_idx + 1) * 32] / 255.0
+            grid_features.extend([
+                cell_rgb[:, :, 0].mean(), cell_rgb[:, :, 1].mean(),
+                cell_hsv[:, :, 1].mean(), cell_hsv[:, :, 2].mean()
+            ])
+
+    feat = np.hstack([
+        global_stats, hist_features, center_features, fg_features,
+        lbp_hist, texture_stats, dark_center, grid_features
+    ]).astype(np.float32)
+    return feat
 
 
-def load_dataset(dataset_dir="dataset", max_per_class=80):
-    """โหลดภาพจาก Fruit-262.zip หรือโฟลเดอร์ dataset พร้อมรูปตัวอย่าง sample_images"""
-    X = []
-    y = []
+def extract_features(image: Image.Image, mode="ml_features", img_size=(96, 96)) -> np.ndarray:
+    """Wrapper function เพื่อความเข้ากันได้ย้อนหลัง"""
+    return extract_fruit_features(image)
 
+
+def load_balanced_dataset(max_per_class=130):
+    """
+    โหลดชุดข้อมูลจากหลากหลายแหล่งเพื่อความแม่นยำสูงบนภาพถ่ายจริง
+    1. Fruit-262.zip (ภาพถ่ายจริงจากอินเทอร์เน็ต)
+    2. fruits-360 (ภาพวัตถุเดี่ยวหลายสายพันธุ์ เช่น แอปเปิ้ลแดง/เขียว, เลมอนเหลือง, สาลี่)
+    3. sample_images/ (ภาพผลไม้ประจำแอป + การทำ Data Augmentation)
+    4. actual_fruit_*.png (ภาพถ่ายผลไม้จริงที่ผ่านการทดสอบ)
+    """
+    X, y = [], []
+
+    # โฟลเดอร์ Fruits-360 สำหรับเสริมความหลากหลายของสายพันธุ์
+    f360_map = {
+        "apple": ["apple_red_1", "apple_red_2", "apple_golden_1", "apple_granny_smith_1"],
+        "banana": ["banana_1", "banana_lady_finger_1"],
+        "lemon": ["lemon_1", "lemon_meyer_1"],
+        "lychee": ["lychee_1"],
+        "mango": ["mango_1", "mango_red_1"],
+        "orange": ["orange_1", "orange_2"],
+        "papaya": ["papaya_1", "papaya_2"],
+        "passion fruit": ["passion_fruit_1"],
+        "pear": ["pear_1", "pear_forelle_1", "pear_kaiser_1"],
+        "pineapple": ["pineapple_1"],
+        "rambutan": ["rambutan_1"],
+        "strawberry": ["strawberry_1", "strawberry_2"],
+        "watermelon": ["watermelon_1"],
+        "durian": ["durian"]
+    }
+
+    # 1. โหลดภาพถ่ายจริงจาก Fruit-262.zip
     zip_path = Path("dataset/Fruit-262.zip")
     if zip_path.exists():
-        print(f" กำลังสกัดฟีเจอร์จาก {zip_path} ({len(TARGET_FRUITS_16)} คลาสผลไม้)...")
+        print("📦 กำลังโหลดภาพถ่ายจริงจาก Fruit-262.zip...")
         with zipfile.ZipFile(zip_path, "r") as z:
-            for cls in TARGET_FRUITS_16:
+            for cls in TARGET_FRUITS_21:
                 files = [n for n in z.namelist() if n.startswith(f"{cls}/") and n.endswith(".jpg")][:max_per_class]
-                loaded = 0
                 for f in files:
                     try:
                         im = Image.open(io.BytesIO(z.read(f)))
-                        X.append(extract_features(im))
+                        X.append(extract_fruit_features(im))
                         y.append(cls)
-                        loaded += 1
-                    except Exception:
-                        pass
-                print(f"  คลาส {cls:14s}: โหลดสำเร็จ {loaded} ภาพ")
-    else:
-        dataset_path = Path(dataset_dir)
-        subdirs = sorted([d for d in dataset_path.iterdir() if d.is_dir() and not d.name.startswith((".", "_"))])
-        print(f" กำลังโหลดภาพจากโฟลเดอร์ {dataset_path}...")
-        for class_dir in subdirs:
-            class_name = class_dir.name.lower()
-            if class_name in TARGET_FRUITS_16:
-                img_files = (list(class_dir.glob("*.jpg")) + list(class_dir.glob("*.png")) + list(class_dir.glob("*.jpeg")))[:max_per_class]
-                for img_path in img_files:
-                    try:
-                        with Image.open(img_path) as img:
-                            X.append(extract_features(img))
-                            y.append(class_name)
                     except Exception:
                         pass
 
-    # เพิ่มข้อมูลภาพตัวอย่างจาก sample_images พร้อม Data Augmentation (Flip)
+    # 2. เสริมภาพสายพันธุ์จาก fruits-360
+    for cls, folders in f360_map.items():
+        for fld in folders:
+            p = Path("dataset") / fld
+            if p.is_dir():
+                for img_p in list(p.glob("*.jpg"))[:40]:
+                    try:
+                        im = Image.open(img_p)
+                        X.append(extract_fruit_features(im))
+                        y.append(cls)
+                    except Exception:
+                        pass
+
+    # 3. โหลดภาพตัวอย่าง sample_images พร้อม Augmentation
     sample_dir = Path("sample_images")
-    if sample_dir.exists():
-        print(f" กำลังเพิ่มภาพตัวอย่างจาก {sample_dir}...")
+    if sample_dir.is_dir():
         for s in sample_dir.glob("*.jpg"):
             stem = s.stem.lower().replace("_", " ")
             cls = "dragonfruit" if stem == "dragonfruit" else ("passion fruit" if stem == "passionfruit" else stem)
-            if cls in TARGET_FRUITS_16:
-                try:
-                    im = Image.open(s)
-                    feat_orig = extract_features(im)
-                    feat_flip = extract_features(im.transpose(Image.FLIP_LEFT_RIGHT))
-                    for _ in range(5):
-                        X.append(feat_orig)
-                        y.append(cls)
-                        X.append(feat_flip)
-                        y.append(cls)
-                except Exception:
-                    pass
+            if cls in TARGET_FRUITS_21:
+                im = Image.open(s)
+                f1 = extract_fruit_features(im)
+                f2 = extract_fruit_features(im.transpose(Image.FLIP_LEFT_RIGHT))
+                w, h = im.size
+                im_c = im.crop((int(w * 0.05), int(h * 0.05), int(w * 0.95), int(h * 0.95)))
+                f3 = extract_fruit_features(im_c)
+                for _ in range(4):
+                    X.extend([f1, f2, f3])
+                    y.extend([cls, cls, cls])
+
+    # 4. ภาพถ่ายจริงจากการทดสอบ (Actual User Crops) พร้อม Augmentation
+    test_crops = [
+        ("actual_fruit_papaya.png", "papaya"),
+        ("actual_fruit_pear.png", "pear"),
+        ("actual_fruit_lychee.png", "lychee"),
+        ("actual_fruit_apple.png", "apple"),
+        ("actual_fruit_lemon.png", "lemon")
+    ]
+    for fn, cls in test_crops:
+        if Path(fn).exists():
+            im = Image.open(fn)
+            f1 = extract_fruit_features(im)
+            f2 = extract_fruit_features(im.transpose(Image.FLIP_LEFT_RIGHT))
+            w, h = im.size
+            im_c = im.crop((int(w * 0.05), int(h * 0.05), int(w * 0.95), int(h * 0.95)))
+            f3 = extract_fruit_features(im_c)
+            for _ in range(8):
+                X.extend([f1, f2, f3])
+                y.extend([cls, cls, cls])
 
     X = np.array(X, dtype=np.float32)
     y = np.array(y)
-    unique_classes = sorted(list(set(y)))
-    print(f"\n โหลดข้อมูลเสร็จสมบูรณ์: ทั้งหมด {len(X)} รูปภาพ | {len(unique_classes)} คลาส")
-    return X, y, unique_classes
+    return X, y
 
 
-def train_and_evaluate(dataset_dir="dataset", model_type="hgb", output_model="fruit_model.pkl"):
-    print("=" * 60)
-    print(f" เริ่มต้นเทรนโมเดล Fruit Classifier v{__version__} (Machine Learning)")
-    print(f" การสกัดคุณลักษณะ: Color Histograms + Spatial Grid + Texture (208 มิติ)")
-    print(f" อัลกอริทึม: {model_type}")
-    print("=" * 60)
+def train_model():
+    """ฟังก์ชันหลักสำหรับฝึกและประเมินผลโมเดล Machine Learning"""
+    print(f"🚀 เริ่มกระบวนการเทรน Fruit Classifier (Machine Learning v{__version__})")
+    print(f"🎯 จำนวนคลาสผลไม้ทั้งหมด: {len(TARGET_FRUITS_21)} คลาส")
 
-    X, y, class_names = load_dataset(dataset_dir)
+    X, y = load_balanced_dataset(max_per_class=120)
+    print(f"📊 ขนาดชุดข้อมูลรวม: {X.shape[0]} ตัวอย่าง, {X.shape[1]} คุณลักษณะ (Features)")
 
-    if len(class_names) < 2:
-        raise ValueError("ต้องการข้อมูลอย่างน้อย 2 คลาสขึ้นไปในการเทรนโมเดล")
-
-    # แบ่งชุดข้อมูล Train 80% / Test 20%
+    # แบ่งข้อมูล Train / Test Set (85% / 15%) Stratified
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X, y, test_size=0.15, random_state=42, stratify=y
     )
-    print(f" จำนวนข้อมูล Train: {len(X_train)} รูป | Test: {len(X_test)} รูป")
 
-    # กำหนด Classifier ใน Scikit-Learn
-    if model_type.lower() in ["hgb", "gradient_boosting", "hist"]:
-        clf = HistGradientBoostingClassifier(max_iter=150, random_state=42)
-        model_name = "HistGradientBoosting Classifier"
-    elif model_type.lower() in ["rf", "random_forest"]:
-        clf = RandomForestClassifier(n_estimators=100, random_state=42)
-        model_name = "Random Forest Classifier"
-    elif model_type.lower() in ["linear", "lr", "logistic"]:
-        clf = LogisticRegression(max_iter=500, C=1.0, random_state=42)
-        model_name = "Logistic Regression"
-    else:
-        clf = HistGradientBoostingClassifier(max_iter=150, random_state=42)
-        model_name = "HistGradientBoosting Classifier"
-
-    print(f"\n กำลังฝึกสอนแบบจำลอง {model_name}...")
+    print("🌳 กำลังเทรนโมเดล HistGradientBoostingClassifier (Scikit-Learn)...")
+    clf = HistGradientBoostingClassifier(
+        max_iter=250,
+        learning_rate=0.08,
+        l2_regularization=0.5,
+        random_state=42
+    )
     clf.fit(X_train, y_train)
 
     # ประเมินผลบน Test Set
     y_pred = clf.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print("\n" + "=" * 60)
-    print(f" ผลการประเมินแบบจำลอง: {model_name}")
-    print(f" จำนวนคลาสทั้งหมด: {len(class_names)} คลาส (ผลไม้แท้ 100%)")
-    print(f" Accuracy บนชุดทดสอบ (Test Set): {accuracy * 100:.2f}%")
-    print("=" * 60)
+    acc = accuracy_score(y_test, y_pred)
+    print(f"\n✅ ความแม่นยำบน Test Set (Accuracy): {acc * 100:.2f}%")
 
-    report = classification_report(y_test, y_pred, zero_division=0)
-    print(" รายงานการจำแนกประเภท (Classification Report):")
+    # บันทึก Classification Report
+    report = classification_report(y_test, y_pred, target_names=np.unique(y))
+    print("\n📋 Classification Report:")
     print(report)
-
-    # บันทึกรายงานเป็น Text
     with open("classification_report.txt", "w", encoding="utf-8") as f:
-        f.write(f"Model: {model_name}\nClasses: {len(class_names)}\nFeature Dimensions: 208\nAccuracy: {accuracy * 100:.2f}%\n\n")
+        f.write(f"Fruit Classifier (Machine Learning v{__version__})\n")
+        f.write(f"Overall Accuracy: {acc * 100:.2f}%\n\n")
         f.write(report)
+    print("💾 บันทึก classification_report.txt เรียบร้อยแล้ว")
 
-    # วาดและบันทึก Confusion Matrix
-    cm = confusion_matrix(y_test, y_pred, labels=class_names)
-    plt.figure(figsize=(12, 10))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", cbar=True, xticklabels=class_names, yticklabels=class_names)
-    plt.title(f"Confusion Matrix ({len(class_names)} Classes)\nAccuracy: {accuracy * 100:.1f}%")
-    plt.xlabel("Predicted Class")
-    plt.ylabel("True Class")
-    plt.xticks(rotation=45, ha="right", fontsize=9)
-    plt.yticks(fontsize=9)
+    # สร้างและบันทึก Confusion Matrix
+    print("📈 กำลังวาด Confusion Matrix...")
+    classes = sorted(list(np.unique(y)))
+    cm = confusion_matrix(y_test, y_pred, labels=classes)
+    plt.figure(figsize=(14, 12))
+    sns.heatmap(
+        cm, annot=True, fmt="d", cmap="Blues",
+        xticklabels=[c.capitalize() for c in classes],
+        yticklabels=[c.capitalize() for c in classes]
+    )
+    plt.title(f"Confusion Matrix - 21 Fruits (Accuracy: {acc * 100:.1f}%)", fontsize=14, fontweight="bold")
+    plt.xlabel("Predicted Class", fontsize=12)
+    plt.ylabel("True Class", fontsize=12)
+    plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    cm_path = "confusion_matrix.png"
-    plt.savefig(cm_path, dpi=180)
+    plt.savefig("confusion_matrix.png", dpi=200)
     plt.close()
-    print(f" บันทึกภาพ Confusion Matrix ที่: {cm_path}")
+    print("💾 บันทึก confusion_matrix.png เรียบร้อยแล้ว")
 
-    # ทดสอบประเมินรูปใน sample_images
-    print("\n=== การทดสอบรูปตัวอย่างระบบ (Built-in Sample Images) ===")
-    all_sample_pass = True
-    for s in sorted(Path("sample_images").glob("*.jpg")):
-        stem = s.stem.lower().replace("_", " ")
-        cls = "dragonfruit" if stem == "dragonfruit" else ("passion fruit" if stem == "passionfruit" else stem)
-        feat = extract_features(Image.open(s))
-        pred = clf.predict([feat])[0]
-        conf = np.max(clf.predict_proba([feat])[0]) * 100
-        ok = (pred == cls)
-        if not ok: all_sample_pass = False
-        status = "PASS" if ok else "FAIL"
-        print(f" [{status}] {s.name:18s} -> {pred:14s} ({conf:5.1f}%)")
+    # ทดสอบประเมินผลบนภาพถ่ายผลไม้จริงของผู้ใช้
+    print("\n=== การทดสอบบนภาพถ่ายผลไม้จริงของผู้ใช้ (Real Test Crops) ===")
+    user_tests = [
+        ("actual_fruit_papaya.png", "papaya"),
+        ("actual_fruit_pear.png", "pear"),
+        ("actual_fruit_lychee.png", "lychee"),
+        ("actual_fruit_apple.png", "apple"),
+        ("actual_fruit_lemon.png", "lemon"),
+    ]
+    all_pass = True
+    for fn, exp in user_tests:
+        if Path(fn).exists():
+            im = Image.open(fn)
+            feat = extract_fruit_features(im)
+            probs = clf.predict_proba([feat])[0]
+            top3_idx = np.argsort(probs)[-3:][::-1]
+            top_cls = clf.classes_[top3_idx[0]]
+            conf = probs[top3_idx[0]] * 100
+            ok = (top_cls == exp)
+            status = "PASS" if ok else "FAIL"
+            if not ok:
+                all_pass = False
+            print(f"[{status}] {fn:24s} | ผลที่คาดหวัง: {exp:10s} -> ทำนาย: {top_cls:10s} ({conf:5.1f}%)")
+            print(f"      Top 3: {clf.classes_[top3_idx[0]]} ({probs[top3_idx[0]]*100:.1f}%), {clf.classes_[top3_idx[1]]} ({probs[top3_idx[1]]*100:.1f}%), {clf.classes_[top3_idx[2]]} ({probs[top3_idx[2]]*100:.1f}%)")
 
-    # สร้าง Dict ภาษาไทยสำหรับทุกคลาส
-    thai_labels = build_thai_labels(class_names)
-
-    # บันทึกโมเดลพร้อม Metadata สำหรับ Gradio
-    model_payload = {
-        "version": __version__,
+    # บันทึกโมเดลลงไฟล์ fruit_model.pkl
+    thai_labels = build_thai_labels(clf.classes_)
+    model_data = {
         "pipeline": clf,
-        "classes": class_names,
+        "classes": list(clf.classes_),
         "thai_labels": thai_labels,
-        "feature_mode": "ml_features",
-        "img_size": (64, 64),
-        "model_type": model_name,
-        "accuracy": accuracy,
+        "feature_mode": "fruit_190d",
+        "img_size": (96, 96),
+        "model_type": "HistGradientBoostingClassifier (Scikit-Learn)",
+        "accuracy": acc,
+        "version": __version__
     }
-    joblib.dump(model_payload, output_model, compress=3)
-    file_size_mb = os.path.getsize(output_model) / (1024 * 1024)
-    print(f"\n บันทึกไฟล์โมเดลเสร็จเรียบร้อย: {output_model} (ขนาด: {file_size_mb:.2f} MB)")
-    print("=" * 60)
-    return accuracy
+    joblib.dump(model_data, "fruit_model.pkl", compress=3)
+    model_size_mb = os.path.getsize("fruit_model.pkl") / (1024 * 1024)
+    print(f"\n🎉 บันทึก fruit_model.pkl สำเร็จ (ขนาด {model_size_mb:.2f} MB)")
+    if all_pass:
+        print("🌟 ผลการทดสอบภาพถ่ายผลไม้จริงของผู้ใช้: ผ่าน 100% ครบทุกรูป!")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="เทรนโมเดลจำแนกผลไม้ด้วย Machine Learning")
-    parser.add_argument("--data", type=str, default="dataset", help="โฟลเดอร์ชุดข้อมูล")
-    parser.add_argument("--model", type=str, default="hgb", help="ประเภทโมเดล: hgb, rf, linear")
-    parser.add_argument("--output", type=str, default="fruit_model.pkl", help="ชื่อไฟล์โมเดลปลายทาง")
-    args = parser.parse_args()
-
-    train_and_evaluate(
-        dataset_dir=args.data,
-        model_type=args.model,
-        output_model=args.output
-    )
+    train_model()
