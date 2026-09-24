@@ -37,8 +37,8 @@ if MODEL_FILE.exists():
 
 EMPTY_STATE_HTML = """
 <div style="background: var(--card-bg, #ffffff); border: 1px dashed var(--card-border, #cbd5e1); border-radius: 12px; padding: 32px 16px; text-align: center; color: var(--text-body, #334155);">
-    <div style="font-size: 2.2rem; margin-bottom: 8px; opacity: 0.9;">🍎🍌🍊🍇🍉🍋🍓🍍🥭🍈🥥🍐🍒🌰🥝🥑</div>
-    <div style="font-size: 1rem; font-weight: 700; color: var(--text-title, #0f172a); margin-bottom: 6px;">พร้อมวิเคราะห์ภาพผลไม้และพืชผล 267 ชนิด (ความแม่นยำ 99.4%)</div>
+    <div style="font-size: 2.2rem; margin-bottom: 8px; opacity: 0.9;">🍎🍌🍊🍇🍉🍋🍓🍍🥭🍈🥥🍐🍒🥝🥑</div>
+    <div style="font-size: 1rem; font-weight: 700; color: var(--text-title, #0f172a); margin-bottom: 6px;">พร้อมวิเคราะห์ภาพผลไม้ 30 ชนิดยอดนิยม (ฝึกสอนด้วยภาพถ่ายจริง Fruit-262)</div>
     <div style="font-size: 0.85rem; color: var(--text-muted, #64748b);">อัปโหลดรูปภาพด้านซ้าย หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อเริ่มการวิเคราะห์</div>
 </div>
 """
@@ -320,7 +320,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             ระบบจำแนกชนิดผลไม้
         </h1>
         <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0; font-weight: 500;">
-            ระบบจำแนกผลไม้และพืชผลครอบคลุม 267 ชนิด (ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล • สตรอว์เบอร์รี • แตงโม • เสาวรส • สับปะรด ฯลฯ ครบทุกสายพันธุ์)
+            ระบบจำแนกผลไม้ 30 ชนิดยอดนิยม (ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล • สตรอว์เบอร์รี • บลูเบอร์รี • แตงโม • เสาวรส • สับปะรด • แก้วมังกร ฯลฯ ครบทุกผลไม้แท้ ไร้ผักปน)
         </p>
     </div>
     """)
@@ -330,9 +330,9 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             # คำอธิบายวิธีใช้งาน (User Guide Banner)
             gr.HTML("""
             <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.9rem; color: var(--text-body); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                <div>💡 <b style="color: var(--text-title);">วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ (แนะนำภาพที่มีพื้นหลังสีขาวหรือสีสว่าง เพื่อความแม่นยำสูงสุด) หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
+                <div>💡 <b style="color: var(--text-title);">วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ (รองรับภาพถ่ายจริงจากกล้องหรือ Google) หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
                 <div style="font-size: 0.8rem; background: var(--highlight-bg); color: var(--highlight-text); font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(4, 120, 87, 0.2);">
-                    ✨ 267 ชนิดผลไม้ & พืชผล (ความแม่นยำ 99.4%)
+                    ✨ 30 ชนิดผลไม้ยอดนิยม (ภาพถ่ายจริง Fruit-262)
                 </div>
             </div>
             """)
