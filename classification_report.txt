@@ -1,18 +1,19 @@
-Model: Random Forest Classifier
+Model: Support Vector Machine (SVM RBF)
 Feature Mode: combined
-Accuracy: 63.01%
+Accuracy: 98.15%
 
               precision    recall  f1-score   support
 
-       apple       0.71      0.91      0.80        11
-      banana       0.73      0.73      0.73        11
-       grape       0.73      1.00      0.84         8
-       lemon       0.44      0.50      0.47         8
-       mango       0.20      0.12      0.15         8
-      orange       0.67      0.73      0.70        11
-  strawberry       0.60      0.38      0.46         8
-  watermelon       0.67      0.50      0.57         8
+       apple       1.00      1.00      1.00        12
+      banana       0.86      1.00      0.92        12
+       grape       1.00      0.92      0.96        12
+       lemon       1.00      1.00      1.00        12
+       mango       1.00      1.00      1.00        12
+      orange       1.00      1.00      1.00        12
+   pineapple       1.00      1.00      1.00        12
+  strawberry       1.00      1.00      1.00        12
+  watermelon       1.00      0.92      0.96        12
 
-    accuracy                           0.63        73
-   macro avg       0.59      0.61      0.59        73
-weighted avg       0.61      0.63      0.61        73
+    accuracy                           0.98       108
+   macro avg       0.98      0.98      0.98       108
+weighted avg       0.98      0.98      0.98       108

@@ -36,10 +36,11 @@ THAI_LABELS = {
     "apple": "แอปเปิ้ล (Apple 🍎)",
     "banana": "กล้วย (Banana 🍌)",
     "orange": "ส้ม (Orange 🍊)",
-    "lemon": "เลมอน/มะนาว (Lemon 🍋)",
+    "lemon": "เลมอน (Lemon 🍋)",
     "strawberry": "สตรอว์เบอร์รี (Strawberry 🍓)",
     "watermelon": "แตงโม (Watermelon 🍉)",
     "grape": "องุ่น (Grape 🍇)",
+    "pineapple": "สับปะรด (Pineapple 🍍)",
     "mango": "มะม่วง (Mango 🥭)",
 }
 

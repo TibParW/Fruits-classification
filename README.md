@@ -1,11 +1,12 @@
 # 🍎🍌🍊 Fruit Classifier (ระบบจำแนกชนิดผลไม้ด้วย Machine Learning)
 
-![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.5-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
+![Dataset](https://img.shields.io/badge/Dataset-Kaggle%20Fruits--360-blueviolet.svg)
 
-ระบบจำแนกชนิดผลไม้พัฒนาด้วย **Python**, **Scikit-Learn (SVM / Random Forest)** และ **Gradio** โดยต่อยอดแนวคิดจากโปรเจกต์ `digit_svm_app` รองรับผลไม้มากถึง 8 ชนิด (แอปเปิ้ล, กล้วย, ส้ม, องุ่น, แตงโม, เลมอน, สตรอว์เบอร์รี, มะม่วง)
+ระบบจำแนกชนิดผลไม้พัฒนาด้วย **Python**, **Scikit-Learn (SVM / Random Forest)** และ **Gradio** โดยต่อยอดแนวคิดจากโปรเจกต์ `digit_svm_app` ใช้ชุดข้อมูลมาตรฐานระดับโลก **Fruits-360 (Kaggle)** รองรับผลไม้มากถึง 9 ชนิด (แอปเปิ้ล, กล้วย, ส้ม, องุ่น, แตงโม, เลมอน, สตรอว์เบอร์รี, สับปะรด, มะม่วง) พร้อมความแม่นยำสูงถึง **98.15%**
 
 ---
 
@@ -13,22 +14,23 @@
 
 ```text
 Fruit Classifier/
-├── dataset/                    # โฟลเดอร์เก็บภาพแบ่งตามคลาส (365 รูป รวม 8 ชนิด)
-│   ├── apple/                  # ภาพแอปเปิ้ล (55 รูป)
-│   ├── banana/                 # ภาพกล้วย (55 รูป)
-│   ├── orange/                 # ภาพส้ม (55 รูป)
-│   ├── grape/                  # ภาพองุ่น (40 รูป)
-│   ├── watermelon/             # ภาพแตงโม (40 รูป)
-│   ├── lemon/                  # ภาพเลมอน (40 รูป)
-│   ├── strawberry/             # ภาพสตรอว์เบอร์รี (40 รูป)
-│   └── mango/                  # ภาพมะม่วง (40 รูป)
-├── download_images.py          # สคริปต์ดาวน์โหลดภาพจากอินเทอร์เน็ตอัตโนมัติ
+├── dataset/                    # โฟลเดอร์เก็บภาพแบ่งตามคลาส (540 รูป รวม 9 ชนิด จาก Kaggle Fruits-360)
+│   ├── apple/                  # ภาพแอปเปิ้ล (60 รูป)
+│   ├── banana/                 # ภาพกล้วย (60 รูป)
+│   ├── orange/                 # ภาพส้ม (60 รูป)
+│   ├── grape/                  # ภาพองุ่น (60 รูป)
+│   ├── watermelon/             # ภาพแตงโม (60 รูป)
+│   ├── lemon/                  # ภาพเลมอน (60 รูป)
+│   ├── strawberry/             # ภาพสตรอว์เบอร์รี (60 รูป)
+│   ├── pineapple/              # ภาพสับปะรด (60 รูป)
+│   └── mango/                  # ภาพมะม่วง (60 รูป)
+├── download_fruits360.py       # สคริปต์ดาวน์โหลดชุดข้อมูลมาตรฐาน Fruits-360 (Kaggle)
+├── download_images.py          # สคริปต์ดาวน์โหลดภาพทางเลือก
 ├── train.py                    # สคริปต์สกัดฟีเจอร์ เทรน และประเมินผลโมเดล
-├── app.py                      # หน้าเว็บ Interactive UI ด้วย Gradio
+├── app.py                      # หน้าเว็บ Interactive UI ด้วย Gradio (Minimalist)
 ├── version.py                  # ไฟล์ระบุเวอร์ชันและ Metadata ของโครงการ
-├── fruit_model.pkl             # โมเดล SVM ที่เทรนเสร็จแล้ว (พร้อมใช้งาน)
-├── fruit_rf_model.pkl          # โมเดล Random Forest ทางเลือก
-├── confusion_matrix.png        # กราฟ Confusion Matrix แสดงผลความแม่นยำ
+├── fruit_model.pkl             # โมเดล SVM RBF ที่เทรนเสร็จแล้ว (Accuracy 98.15%)
+├── confusion_matrix.png        # กราฟ Confusion Matrix แสดงผลความแม่นยำ 9 คลาส
 ├── classification_report.txt   # รายงานผล Precision, Recall, F1-Score
 └── requirements.txt            # รายการไลบรารีที่จำเป็น
 ```
@@ -112,6 +114,17 @@ python app.py
 ---
 
 ## 📌 บันทึกประวัติเวอร์ชัน (Version History & Changelog)
+
+### **v1.0.5 (2026-09-24) - Kaggle Fruits-360 Dataset Integration (9 Classes, 540 Images, 98.15% Accuracy)**
+- 🏆 **Kaggle Fruits-360 Dataset:**
+  - นำเข้าชุดข้อมูลมาตรฐานระดับโลก **Fruits-360 (Kaggle)** โดยตรง
+  - สคริปต์ `download_fruits360.py` รองรับ Multi-threaded high-speed download
+  - ขยายเป็น **9 ชนิดผลไม้** รวม **540 รูปภาพ** (คลาสละ 60 รูป): Apple, Banana, Orange, Grape, Watermelon, Lemon, Strawberry, Pineapple, Mango
+- 🎯 **Exceptional Performance:**
+  - สกัดฟีเจอร์แบบ `combined` (Spatial Pixels + RGB Histograms + HSV Color Distribution)
+  - โมเดล **SVM (RBF Kernel)** ทำสถิติความแม่นยำบน Test Set (108 รูป) สูงถึง **98.15%** (Precision & Recall 1.00 ในเกือบทุกคลาส)
+- 🎨 **Minimal UI Polish:**
+  - รองรับการแสดงผลทั้ง 9 ชนิดผลไม้ พร้อมไอคอนและสีสันสไตล์โมเดิร์น
 
 ### **v1.0.4 (2026-09-24) - Expanded to 8 Fruit Classes (365 Images)**
 - 🍎🍌🍊🍇🍉🍋🍓🥭 **Dataset Expansion:**
