@@ -38,7 +38,7 @@ if MODEL_FILE.exists():
 EMPTY_STATE_HTML = """
 <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 36px 16px; text-align: center; color: #64748b;">
     <div style="font-size: 2.2rem; margin-bottom: 6px; opacity: 0.85;">🍎🍌🍊🍇🍉🍋🍓🍍🥭👑🔴🐲🍈🥥🍐🍒🌰🥝🥑</div>
-    <div style="font-size: 0.95rem; font-weight: 600; color: #334155;">พร้อมวิเคราะห์ภาพผลไม้และพืชผล 267 ชนิด</div>
+    <div style="font-size: 0.95rem; font-weight: 600; color: #334155;">พร้อมวิเคราะห์ภาพผลไม้และพืชผล 300 ชนิด</div>
     <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">อัปโหลดรูปภาพทางซ้ายเพื่อเริ่มการวิเคราะห์อัตโนมัติ</div>
 </div>
 """
@@ -61,7 +61,7 @@ def predict_fruit(image: Image.Image):
     classes = model_data["classes"]
     thai_labels = model_data.get("thai_labels", {})
     feature_mode = model_data.get("feature_mode", "combined")
-    img_size = model_data.get("img_size", (64, 64))
+    img_size = model_data.get("img_size", (32, 32))
 
     # สกัดฟีเจอร์จากรูปที่ผู้ใช้อัปโหลด
     try:
@@ -195,7 +195,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             ระบบจำแนกชนิดผลไม้
         </h1>
         <p style="color: #64748b; font-size: 0.92rem; margin: 0; font-weight: 400;">
-            ระบบจำแนกผลไม้และพืชผลครอบคลุม 267 ชนิด (ทุเรียน • มังคุด • เงาะ • แก้วมังกร • แอปเปิ้ล • กล้วย ฯลฯ ครบทุกสายพันธุ์)
+            ระบบจำแนกผลไม้และพืชผลครอบคลุม 300 ชนิด (ทุเรียน • มังคุด • เงาะ • ขนุน • ลำไย • กระท้อน • น้อยหน่า • แก้วมังกร ฯลฯ ครบทุกสายพันธุ์)
         </p>
     </div>
     """)
@@ -207,7 +207,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; font-size: 0.88rem; color: #475569; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                 <div>💡 <b>วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
                 <div style="font-size: 0.78rem; background: #ecfdf5; color: #047857; font-weight: 600; padding: 3px 10px; border-radius: 999px;">
-                    ✨ 267 ชนิดผลไม้ & พืชผล
+                    ✨ 300 ชนิดผลไม้ & พืชผล
                 </div>
             </div>
             """)
@@ -228,7 +228,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                         label="ระดับความมั่นใจ (Confidence Breakdown)",
                         num_top_classes=5
                     )
-                    with gr.Accordion("🔍 ภาพที่โมเดลประมวลผล (64×64 px)", open=False):
+                    with gr.Accordion("🔍 ภาพที่โมเดลประมวลผล (32×32 px)", open=False):
                         output_thumb = gr.Image(
                             label="Resized Thumbnail",
                             height=120,
@@ -241,6 +241,10 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                 ["sample_images/durian.jpg"],
                 ["sample_images/mangosteen.jpg"],
                 ["sample_images/rambutan.jpg"],
+                ["sample_images/jackfruit.jpg"],
+                ["sample_images/longan.jpg"],
+                ["sample_images/santol.jpg"],
+                ["sample_images/custard_apple.jpg"],
                 ["sample_images/dragonfruit.jpg"],
                 ["sample_images/mango.jpg"],
                 ["sample_images/coconut.jpg"],
@@ -253,7 +257,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                     gr.Markdown(
                         "<div style='font-size: 0.85rem; color: #64748b; margin-bottom: 8px;'>"
                         "คลิกเลือกภาพผลไม้ตัวอย่างด้านล่างเพื่อทดสอบระบบได้ทันที: "
-                        "<b>ทุเรียน 👑 • มังคุด 👑 • เงาะ 🔴 • แก้วมังกร 🐲 • มะม่วง 🥭 • มะพร้าว 🥥 • กล้วย 🍌 • แอปเปิ้ล 🍎</b>"
+                        "<b>ทุเรียน 👑 • มังคุด 👑 • เงาะ 🔴 • ขนุน 🍈 • ลำไย 🌰 • กระท้อน 🟡 • น้อยหน่า 🍈 • แก้วมังกร 🐲 • มะม่วง 🥭 • มะพร้าว 🥥 • กล้วย 🍌 • แอปเปิ้ล 🍎</b>"
                         "</div>"
                     )
                     gr.Examples(
