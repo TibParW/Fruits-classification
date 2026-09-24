@@ -6,6 +6,8 @@ __pycache__/
 # Temporary download directory
 dataset/_temp_bing/
 _temp_bing/
+*.zip
+*.tar.gz
 
 # Caches and environments
 .env

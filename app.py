@@ -38,7 +38,7 @@ if MODEL_FILE.exists():
 EMPTY_STATE_HTML = """
 <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 36px 16px; text-align: center; color: #64748b;">
     <div style="font-size: 2.2rem; margin-bottom: 6px; opacity: 0.85;">🍎🍌🍊🍇🍉🍋🍓🍍🥭👑🔴🐲🍈🥥🍐🍒🌰🥝🥑</div>
-    <div style="font-size: 0.95rem; font-weight: 600; color: #334155;">พร้อมวิเคราะห์ภาพผลไม้ 21 ชนิด (ไทย & สากล)</div>
+    <div style="font-size: 0.95rem; font-weight: 600; color: #334155;">พร้อมวิเคราะห์ภาพผลไม้และพืชผล 267 ชนิด</div>
     <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">อัปโหลดรูปภาพทางซ้ายเพื่อเริ่มการวิเคราะห์อัตโนมัติ</div>
 </div>
 """
@@ -109,7 +109,7 @@ def predict_fruit(image: Image.Image):
                 โมเดล {model_type}
             </span>
             <span style="background: #f1f5f9; color: #475569; font-size: 0.8rem; font-weight: 500; padding: 3px 10px; border-radius: 999px;">
-                {feature_mode} (64×64 px)
+                {feature_mode} ({img_size[0]}×{img_size[1]} px)
             </span>
         </div>
     </div>
@@ -195,7 +195,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             ระบบจำแนกชนิดผลไม้
         </h1>
         <p style="color: #64748b; font-size: 0.92rem; margin: 0; font-weight: 400;">
-            รองรับผลไม้ไทยและสากล 21 ชนิด (ทุเรียน • มังคุด • เงาะ • แก้วมังกร • มะละกอ • มะพร้าว • ส้ม • กล้วย • แอปเปิ้ล ฯลฯ)
+            ระบบจำแนกผลไม้และพืชผลครอบคลุม 267 ชนิด (ทุเรียน • มังคุด • เงาะ • แก้วมังกร • แอปเปิ้ล • กล้วย ฯลฯ ครบทุกสายพันธุ์)
         </p>
     </div>
     """)
@@ -207,7 +207,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; font-size: 0.88rem; color: #475569; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                 <div>💡 <b>วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
                 <div style="font-size: 0.78rem; background: #ecfdf5; color: #047857; font-weight: 600; padding: 3px 10px; border-radius: 999px;">
-                    ✨ 21 ชนิดผลไม้ไทย & สากล
+                    ✨ 267 ชนิดผลไม้ & พืชผล
                 </div>
             </div>
             """)
