@@ -132,8 +132,19 @@ def predict_fruit(image: Image.Image, crop_mode: str = "square_1_1"):
         """
         return None, error_html, None, None
 
-    # คำนวณความน่าจะเป็นของแต่ละคลาส
-    probabilities = pipeline.predict_proba([features])[0]
+    # คำนวณความน่าจะเป็นของแต่ละคลาส (พร้อมระบบ Outlier Clipping ป้องกันค่า z-score ระเบิดจากขอบภาพมืด/ขอบจอคอม)
+    try:
+        scaler = pipeline.named_steps.get("scaler")
+        classifier = pipeline.named_steps.get("classifier")
+        if scaler is not None and classifier is not None:
+            scaled_feat = scaler.transform([features])
+            # ป้องกัน z-score ระเบิดเกิน +/- 3.5 standard deviations (Outlier Safeguard)
+            clipped_feat = np.clip(scaled_feat, -3.5, 3.5)
+            probabilities = classifier.predict_proba(clipped_feat)[0]
+        else:
+            probabilities = pipeline.predict_proba([features])[0]
+    except Exception:
+        probabilities = pipeline.predict_proba([features])[0]
     pred_idx = np.argmax(probabilities)
     pred_class = classes[pred_idx]
     pred_confidence = probabilities[pred_idx] * 100
