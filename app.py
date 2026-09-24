@@ -158,6 +158,23 @@ button.primary:hover {
 footer {
     display: none !important;
 }
+
+/* ตกแต่งส่วน Examples ให้เรียบเนียนสไตล์ Minimal */
+.gallery {
+    border: none !important;
+    background: transparent !important;
+}
+.gallery button {
+    border-radius: 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    overflow: hidden !important;
+    transition: all 0.2s ease !important;
+}
+.gallery button:hover {
+    border-color: #0f172a !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
 </style>
 """
 
@@ -185,6 +202,16 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
 
     with gr.Tabs():
         with gr.TabItem("✨ จำแนกภาพผลไม้ (Classifier)"):
+            # คำอธิบายวิธีใช้งาน (User Guide Banner)
+            gr.HTML("""
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; font-size: 0.88rem; color: #475569; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div>💡 <b>วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
+                <div style="font-size: 0.78rem; background: #ecfdf5; color: #047857; font-weight: 600; padding: 3px 10px; border-radius: 999px;">
+                    ✨ 21 ชนิดผลไม้ไทย & สากล
+                </div>
+            </div>
+            """)
+
             with gr.Row():
                 with gr.Column(scale=1):
                     input_image = gr.Image(
@@ -209,6 +236,34 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                             interactive=False
                         )
 
+            # ภาพตัวอย่างสำหรับให้อาจารย์และผู้ใช้ทดสอบทันที (Sample Images)
+            sample_files = [
+                ["sample_images/durian.jpg"],
+                ["sample_images/mangosteen.jpg"],
+                ["sample_images/rambutan.jpg"],
+                ["sample_images/dragonfruit.jpg"],
+                ["sample_images/mango.jpg"],
+                ["sample_images/coconut.jpg"],
+                ["sample_images/banana.jpg"],
+                ["sample_images/apple.jpg"],
+            ]
+            valid_samples = [s for s in sample_files if Path(s[0]).exists()]
+            if valid_samples:
+                with gr.Accordion("📁 ภาพตัวอย่างสำหรับทดสอบ (Click Sample Image to Test)", open=True):
+                    gr.Markdown(
+                        "<div style='font-size: 0.85rem; color: #64748b; margin-bottom: 8px;'>"
+                        "คลิกเลือกภาพผลไม้ตัวอย่างด้านล่างเพื่อทดสอบระบบได้ทันที: "
+                        "<b>ทุเรียน 👑 • มังคุด 👑 • เงาะ 🔴 • แก้วมังกร 🐲 • มะม่วง 🥭 • มะพร้าว 🥥 • กล้วย 🍌 • แอปเปิ้ล 🍎</b>"
+                        "</div>"
+                    )
+                    gr.Examples(
+                        examples=valid_samples,
+                        inputs=input_image,
+                        outputs=[output_label, output_summary, output_thumb],
+                        fn=predict_fruit,
+                        cache_examples=False,
+                        label="ภาพตัวอย่างผลไม้ (Sample Images)"
+                    )
 
             # รองรับทั้งคลิกปุ่ม และ Auto-predict ทันทีที่อัปโหลดรูป
             predict_btn.click(
