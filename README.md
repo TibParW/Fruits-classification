@@ -1,14 +1,13 @@
 # 🍎 โครงการพัฒนาระบบจำแนกชนิดผลไม้ (Fruit Classifier)
-## Deep Vision Image Classification & Gradio Web Application (26 Real Fruit Classes)
+## Machine Learning Image Classification & Gradio Web Application (16 Pure Fruit Classes)
 
-![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
-![ONNX Runtime](https://img.shields.io/badge/ONNX%20Runtime-1.30-blue.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
-![Classes](https://img.shields.io/badge/Classes-26%20Pure%20Fruits-success.svg)
-![Model](https://img.shields.io/badge/Model-MobileNetV2%20Deep%20Features-blueviolet.svg)
-![Samples](https://img.shields.io/badge/Samples-1%2C916%20Real%20Photos-blue.svg)
+![Classes](https://img.shields.io/badge/Classes-16%20Pure%20Fruits-success.svg)
+![Model](https://img.shields.io/badge/Model-HistGradientBoosting-blueviolet.svg)
+![Samples](https://img.shields.io/badge/Samples-1%2C440%20Real%20Photos-blue.svg)
 ![Deployment](https://img.shields.io/badge/Deployment-Render%20Live-brightgreen.svg)
 
 ---
@@ -38,59 +37,57 @@
 ### 1.1 ปัญหาที่ต้องการแก้ (Problem Statement)
 การระบุและจำแนกสายพันธุ์ผลไม้และพืชผลทางการเกษตรมีความสำคัญอย่างยิ่งต่อระบบห่วงโซ่อุปทาน (Supply Chain) การคัดเกรดผลผลิตอัตโนมัติ (Automated Agricultural Sorting) และระบบคิดเงินอัตโนมัติในซูเปอร์มาร์เก็ต (Smart Retail Self-Checkout)
 
-อย่างไรก็ดี ในการใช้งานจริง รูปภาพที่ได้จากกล้องมือถือหรืออินเทอร์เน็ตมักมีสิ่งรบกวน เช่น เขียงไม้ ตะกร้าหวาย โต๊ะอาหาร หรือผลไม้ที่ถูกหั่น/ผ่าครึ่ง หากใช้การสกัดฟีเจอร์แบบพื้นฐาน (Raw Pixels หรือ Color Histograms เพียงอย่างเดียว) โมเดลจะไม่เข้าใจรูปทรงเรขาคณิต (Shape & Semantics) ทำให้ผลไม้ที่มีสีเหลืองเหมือนกัน (กล้วย มะม่วง เลมอน) หรือสีแดงเหมือนกัน (แอปเปิ้ล ลิ้นจี่ เชอร์รี่) ทำนายสับสนปนเปกัน
+อย่างไรก็ดี ในการจำแนกภาพผลไม้ด้วยแบบจำลอง Machine Learning แบบดั้งเดิม หากใช้ข้อมูลพิกเซลสีดิบ (Raw Pixels) เพียงอย่างเดียว แบบจำลองจะไม่ทนทานต่อการหมุนและการเปลี่ยนมุมมอง การออกแบบกระบวนการสกัดคุณลักษณะ (Feature Extraction) ที่ผสานทั้งค่าสถิติสี (Color Histograms) โครงสร้างเชิงพื้นที่ (Spatial Grid Layout) และผิวสัมผัส (Texture) จึงเป็นหัวใจสำคัญในการแก้ปัญหานี้
 
 ### 1.2 ประโยชน์ของระบบ (Benefits)
-1. **ตัดผักและสิ่งรบกวนออก 100%:** คัดสรรเฉพาะ **26 ผลไม้ยอดนิยมและผลไม้ไทยเขตร้อนแท้** (ทุเรียน มังคุด เงาะ มะม่วง มะพร้าว กล้วย แอปเปิ้ล สตรอว์เบอร์รี แตงโม เสาวรส สับปะรด แก้วมังกร เลมอน มะนาว ส้ม ขนุน น้อยหน่า กระท้อน ลำไย ฯลฯ)
-2. **ระบบสกัดคุณลักษณะ Deep Vision (MobileNetV2 2,280 มิติ):** ผสานคุณลักษณะเชิงลึก (Deep Semantic Representations 1,280 มิติ) ร่วมกับ Normalized Likelihoods (1,000 มิติ) จับรูปทรง พื้นผิวเปลือก เมล็ด และเนื้อผลไม้ได้แม่นยำ ไม่สับสนแม้มีฉากหลังเป็นเขียงไม้หรือตะกร้า
-3. **เบาและรวดเร็วสูง (ONNX Runtime CPU):** รันบน CPU ด้วยความเร็วเพียง 15 ms ต่อภาพ และใช้ RAM ต่ำกว่า 80 MB ปลอดภัย ไม่เสี่ยงโดนตัด RAM บน Render Free Tier
+1. **ตัดผักและสิ่งรบกวนออก 100%:** คัดสรรเฉพาะ **16 ผลไม้ยอดนิยมและผลไม้ไทยเขตร้อนแท้** (ทุเรียน มังคุด เงาะ มะม่วง มะพร้าว กล้วย แอปเปิ้ล สตรอว์เบอร์รี แตงโม เสาวรส สับปะรด แก้วมังกร ขนุน น้อยหน่า กระท้อน ลำไย)
+2. **การสกัดคุณลักษณะหลายมิติ (Feature Engineering 208 มิติ):** ผสานฮิสโตแกรมสี RGB (48 มิติ), การกระจายตัวของสี HSV (56 มิติ), ตารางเชิงพื้นที่ 4x4 (96 มิติ) และผิวสัมผัส Texture (8 มิติ) ด้วย Scikit-Learn และ NumPy
+3. **เบาและรวดเร็วสูง (Pure Scikit-Learn):** ขนาดโมเดลเพียง **1.73 MB** รันบน CPU ด้วยความเร็วเพียง 10 ms ต่อภาพ และใช้ RAM ต่ำกว่า 60 MB ปลอดภัย ไม่เสี่ยงโดนตัด RAM บน Render Free Tier
 
 ---
 
 ## 📦 2. แหล่งที่มา จำนวนข้อมูล และการแบ่งชุดข้อมูล (Dataset & Splitting)
 
 ### 2.1 แหล่งที่มาของข้อมูล (Data Sources)
-* **Fruit-262 Dataset (Kaggle):** ชุดข้อมูลภาพถ่ายผลไม้จริงจากสภาพแวดล้อมธรรมชาติทั่วโลก (คัดเลือก 26 ชนิดผลไม้แท้ x 70+ รูปภาพ)
+* **Fruit-262 Dataset (Kaggle):** ชุดข้อมูลภาพถ่ายผลไม้จริงจากสภาพแวดล้อมธรรมชาติทั่วโลก (คัดเลือก 16 ชนิดผลไม้แท้ x 80 รูปภาพ)
 * **Sample Images & Augmentation:** ภาพตัวอย่างทดสอบพร้อมเทคนิค Data Augmentation (Horizontal Flip)
 
 ### 2.2 จำนวนข้อมูลและการแบ่งชุดฝึก/ชุดทดสอบ (Dataset Distribution)
-* **จำนวนคลาสทั้งหมด:** **26 คลาสผลไม้ยอดนิยมแท้ (Zero Vegetables)**
-* **จำนวนภาพรวมทั้งหมด:** **1,916 รูปภาพ**
+* **จำนวนคลาสทั้งหมด:** **16 คลาสผลไม้ยอดนิยมแท้ (Zero Vegetables)**
+* **จำนวนภาพรวมทั้งหมด:** **1,440 รูปภาพ**
 * **การแบ่งชุดข้อมูล (Data Splitting):** ใช้วิธี **Stratified Train-Test Split (80:20)**:
-  * **ชุดฝึกสอน (Train Set 80%):** **1,532 รูปภาพ**
-  * **ชุดทดสอบ (Test Set 20%):** **384 รูปภาพ**
+  * **ชุดฝึกสอน (Train Set 80%):** **1,152 รูปภาพ**
+  * **ชุดทดสอบ (Test Set 20%):** **288 รูปภาพ**
 
 ---
 
 ## 🔬 3. แบบจำลองที่ใช้ การสกัดคุณลักษณะ ผลการประเมิน และข้อจำกัด
 
-### 3.1 การสกัดคุณลักษณะ (Deep Feature Extraction: 2,280 มิติ)
-แบบจำลองทำการสกัดฟีเจอร์ระดับ Deep Convolutional Feature Space ผ่านโครงข่ายประสาทเทียม MobileNetV2 (ONNX Graph):
-1. **Deep Semantic Representations (1,280 มิติ):** สกัดจาก Global Average Pooling Layer (Node 472) ก่อนชั้น Classification Head แล้วทำ $L_2$ Normalization เพื่อจับความสัมพันธ์ของรูปทรงเรขาคณิต ผิวสัมผัส ลายเปลือก และริ้วรอยของผลไม้
-2. **Normalized Semantic Likelihoods (1,000 มิติ):** สกัดจาก Softmax Likelihoods ของ ImageNet Categories ถ่วงน้ำหนักเพื่อเพิ่มพลังการแยกแยะผลไม้กลุ่มสากล เช่น เลมอน กล้วย ส้ม แอปเปิ้ล
+### 3.1 การสกัดคุณลักษณะ (Feature Extraction: 208 มิติ)
+แบบจำลองทำการสกัดฟีเจอร์ด้วยหลักการ Digital Image Processing และสถิติ:
+1. **RGB Color Histogram (48 มิติ):** ฮิสโตแกรมความถี่ของค่าสีแดง เขียว และน้ำเงิน (ช่องละ 16 bins)
+2. **HSV Color Distribution (56 มิติ):** ฮิสโตแกรมของ Hue (24 bins), Saturation (16 bins), และ Value (16 bins) เพื่อจับเนื้อสีและความสดของสีที่ไม่ขึ้นกับความสว่าง
+3. **Spatial Grid Layout 4x4 (96 มิติ):** ค่าเฉลี่ยสี RGB และ HSV ในตาราง 16 ช่องเพื่อจับการจัดวางตำแหน่งของผลไม้
+4. **Texture & Gradient Features (8 มิติ):** ความชันของขอบภาพ (Gradient) และค่าความแปรปรวนของพิกเซล เพื่อแยกแยะผลไม้ผิวเรียบออกจากผลไม้ที่มีหนามหรือผิวขรุขระ
 
 ### 3.2 แบบจำลองที่ใช้ (Model Architecture)
-* **อัลกอริทึม:** Multinomial Logistic Regression ($C=5.0$, `max_iter=1000`) บน Deep Feature Representation
+* **อัลกอริทึม:** HistGradientBoostingClassifier (Gradient Boosted Decision Trees จาก Scikit-Learn)
 * **เหตุผลที่เลือกใช้:**
-  * สามารถแยกแยะ Hyperplane ใน Deep Embedding Space ขนาด 2,280 มิติได้อย่างแม่นยำสูง
-  * ใช้เวลาเทรนเพียงไม่กี่วินาที
-  * ขนาดไฟล์โมเดลเล็กมากเพียง **0.21 MB** (บวกกับ ONNX Graph 13.3 MB)
+  * เหมาะสำหรับการเรียนรู้ความสัมพันธ์แบบ Non-Linear ของคุณลักษณะสีและผิวสัมผัส
+  * ทนทานต่อ Outliers และมี Regularization ในตัว
+  * ขนาดไฟล์โมเดลเล็กมากเพียง **1.73 MB** 
   * ประหยัด RAM สูงสุด เหมาะสม 100% สำหรับการรันบน Render Cloud Free Tier
 
 ### 3.3 ผลการประเมินหลักบนชุดทดสอบ (Evaluation Results)
-* **Accuracy บน Test Set (384 รูปภาพจริง):** **82.55%** (เทียบกับค่าสุ่มเดาที่ $\frac{1}{26} = 3.85\%$)
-* **Macro Average:** Precision = **0.83**, Recall = **0.82**, F1-Score = **0.82**
-* **Weighted Average:** Precision = **0.83**, Recall = **0.83**, F1-Score = **0.82**
-* **ผลการทดสอบภาพจริงจากผู้ใช้ (User Real Test Images):**
-  * `กล้วยบนพื้นขาว (Banana)` -> **กล้วย (Banana) 99.4% (ถูกต้อง)**
-  * `มะม่วงหั่นชิ้นบนเขียงไม้ (Mango)` -> **มะม่วง (Mango) 90.0% (ถูกต้อง)**
-  * `แอปเปิ้ลบนโต๊ะไม้ (Apple)` -> **แอปเปิ้ล (Apple) 42.5% (ถูกต้อง)**
-  * `เลมอนในตะกร้าหวาย (Lemon)` -> **เลมอน (Lemon) 43.5% (ถูกต้อง)**
+* **Accuracy บน Test Set (288 รูปภาพจริง):** **58.68%** (เทียบกับค่าสุ่มเดาที่ $\frac{1}{16} = 6.25\%$)
+* **Macro Average:** Precision = **0.60**, Recall = **0.59**, F1-Score = **0.59**
+* **Weighted Average:** Precision = **0.60**, Recall = **0.59**, F1-Score = **0.59**
 * **ผลการทดสอบคลังภาพตัวอย่างในระบบ (Sample Images):** ถูกต้อง **100% (16/16 ภาพ)**
+  * ทุเรียน, มังคุด, เงาะ, มะม่วง, มะพร้าว, กล้วย, แอปเปิ้ล, สตรอว์เบอร์รี, แตงโม, เสาวรส, สับปะรด, แก้วมังกร, ขนุน, น้อยหน่า, กระท้อน, ลำไย (ผ่าน 100%)
 
 ### 3.4 ข้อจำกัดและการวิเคราะห์ข้อผิดพลาด (Model Limitations & Error Analysis)
-1. **ภาพที่มีผลไม้ปะปนหลายชนิดในภาพเดียวกัน:** หากในภาพมีผลไม้มากกว่า 1 ชนิด (เช่น ตะกร้าผลไม้รวม) โมเดลจะตรวจจับผลไม้ที่เด่นหรือกินพื้นที่มากที่สุดในบริเวณกึ่งกลางภาพ
-2. **ขอบเขตของสายพันธุ์ (Closed-Set Assumption):** โมเดลถูกออกแบบมาเพื่อจำแนกผลไม้ 26 ชนิดหลัก หากนำพืชผลชนิดอื่นที่ไม่ได้อยู่ใน 26 คลาสเข้ามา โมเดลจะจับคู่กับผลไม้ที่มีผิวสัมผัสและรูปทรงใกล้เคียงที่สุดแทน
+1. **ผลไม้ที่มีเฉดสีและรูปทรงใกล้เคียงกัน:** เช่น มะม่วงสุกกับกล้วย หรือแอปเปิ้ลแดงกับเชอร์รี่ อาจมีบางมุมมองที่มีฮิสโตแกรมสีทับซ้อนกัน
+2. **ขอบเขตของสายพันธุ์ (Closed-Set Assumption):** โมเดลถูกออกแบบมาเพื่อจำแนกผลไม้ 16 ชนิดหลัก หากนำพืชผลชนิดอื่นที่ไม่ได้อยู่ใน 16 คลาสเข้ามา โมเดลจะจับคู่กับผลไม้ที่มีคุณลักษณะใกล้เคียงที่สุดแทน
 
 ---
 
