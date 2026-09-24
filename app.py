@@ -177,6 +177,10 @@ with gr.Blocks(title=f"ระบบจำแนกชนิดผลไม้ v{
     - สกัดทั้ง Flatten Pixel Array (64x64) และ Color Histogram RGB ตามแนวคิดเดียวกับแล็บ `digit_svm_app`
     """)
 
+# Export top-level 'app' สำหรับ ASGI / Vercel Serverless Python Runtime
+from fastapi import FastAPI
+app = gr.mount_gradio_app(FastAPI(), demo, path="/")
+
 
 if __name__ == "__main__":
     print("\n กำลังเริ่มรัน Gradio Web Server...")

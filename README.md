@@ -1,6 +1,6 @@
 # 🍎🍌🍊 Fruit Classifier (ระบบจำแนกชนิดผลไม้ด้วย Machine Learning)
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
@@ -107,6 +107,13 @@ python app.py
 ---
 
 ## 📌 บันทึกประวัติเวอร์ชัน (Version History & Changelog)
+
+### **v1.0.1 (2026-09-24) - Vercel & ASGI Support**
+- 🛠️ **Deployment Compatibility:**
+  - Export top-level ASGI `app` ผ่าน `gr.mount_gradio_app(FastAPI(), demo, path="/")` เพื่อแก้ปัญหา Vercel Serverless Function error: *"Found app.py but it does not export a top-level 'app'"*
+  - เพิ่มไฟล์คอนฟิก `vercel.json` สำหรับการทำ Route Rewrites
+  - เพิ่ม `fastapi` และ `uvicorn` ลงใน `requirements.txt`
+  - อัปเดต metadata ของระบบและ UI เป็นเวอร์ชัน `v1.0.1`
 
 ### **v1.0.0 (2026-09-24) - Initial Release**
 - 🎉 เปิดตัวโครงงาน Fruit Classifier เวอร์ชันแรกอย่างเป็นทางการ
