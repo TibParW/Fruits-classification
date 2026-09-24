@@ -1,19 +1,31 @@
 Model: Support Vector Machine (SVM RBF)
 Feature Mode: combined
-Accuracy: 98.15%
+Accuracy: 100.00%
 
               precision    recall  f1-score   support
 
        apple       1.00      1.00      1.00        12
-      banana       0.86      1.00      0.92        12
-       grape       1.00      0.92      0.96        12
+     avocado       1.00      1.00      1.00        12
+      banana       1.00      1.00      1.00        12
+     coconut       1.00      1.00      1.00        12
+ dragonfruit       1.00      1.00      1.00        12
+      durian       1.00      1.00      1.00        12
+       grape       1.00      1.00      1.00        12
+       guava       1.00      1.00      1.00        12
+        kiwi       1.00      1.00      1.00        12
        lemon       1.00      1.00      1.00        12
+      lychee       1.00      1.00      1.00        12
        mango       1.00      1.00      1.00        12
+  mangosteen       1.00      1.00      1.00        12
       orange       1.00      1.00      1.00        12
+      papaya       1.00      1.00      1.00        12
    pineapple       1.00      1.00      1.00        12
+ pomegranate       1.00      1.00      1.00        12
+    rambutan       1.00      1.00      1.00        12
+       salak       1.00      1.00      1.00        12
   strawberry       1.00      1.00      1.00        12
-  watermelon       1.00      0.92      0.96        12
+  watermelon       1.00      1.00      1.00        12
 
-    accuracy                           0.98       108
-   macro avg       0.98      0.98      0.98       108
-weighted avg       0.98      0.98      0.98       108
+    accuracy                           1.00       252
+   macro avg       1.00      1.00      1.00       252
+weighted avg       1.00      1.00      1.00       252

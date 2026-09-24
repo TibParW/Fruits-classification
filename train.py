@@ -42,6 +42,18 @@ THAI_LABELS = {
     "grape": "องุ่น (Grape 🍇)",
     "pineapple": "สับปะรด (Pineapple 🍍)",
     "mango": "มะม่วง (Mango 🥭)",
+    "durian": "ทุเรียน (Durian 👑)",
+    "mangosteen": "มังคุด (Mangosteen 👑)",
+    "rambutan": "เงาะ (Rambutan 🔴)",
+    "dragonfruit": "แก้วมังกร (Dragon Fruit 🐲)",
+    "papaya": "มะละกอ (Papaya 🍈)",
+    "coconut": "มะพร้าว (Coconut 🥥)",
+    "guava": "ฝรั่ง (Guava 🍐)",
+    "lychee": "ลิ้นจี่ (Lychee 🍒)",
+    "salak": "สละ (Salak 🌰)",
+    "kiwi": "กีวี (Kiwi 🥝)",
+    "avocado": "อะโวคาโด (Avocado 🥑)",
+    "pomegranate": "ทับทิม (Pomegranate 🍎)",
 }
 
 

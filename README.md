@@ -1,12 +1,13 @@
 # 🍎🍌🍊 Fruit Classifier (ระบบจำแนกชนิดผลไม้ด้วย Machine Learning)
 
-![Version](https://img.shields.io/badge/version-1.0.5-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
-![Dataset](https://img.shields.io/badge/Dataset-Kaggle%20Fruits--360-blueviolet.svg)
+![Classes](https://img.shields.io/badge/Classes-21%20Fruits-success.svg)
+![Accuracy](https://img.shields.io/badge/Accuracy-100%25-brightgreen.svg)
 
-ระบบจำแนกชนิดผลไม้พัฒนาด้วย **Python**, **Scikit-Learn (SVM / Random Forest)** และ **Gradio** โดยต่อยอดแนวคิดจากโปรเจกต์ `digit_svm_app` ใช้ชุดข้อมูลมาตรฐานระดับโลก **Fruits-360 (Kaggle)** รองรับผลไม้มากถึง 9 ชนิด (แอปเปิ้ล, กล้วย, ส้ม, องุ่น, แตงโม, เลมอน, สตรอว์เบอร์รี, สับปะรด, มะม่วง) พร้อมความแม่นยำสูงถึง **98.15%**
+ระบบจำแนกชนิดผลไม้พัฒนาด้วย **Python**, **Scikit-Learn (SVM RBF)** และ **Gradio** ต่อยอดแนวคิดจากโปรเจกต์ `digit_svm_app` ผสานชุดข้อมูลมาตรฐานระดับโลก **Fruits-360 (Kaggle)** ร่วมกับชุดข้อมูลผลไม้ไทยยอดนิยม ครอบคลุมผลไม้มากถึง **21 ชนิด** รวม **1,260 รูปภาพ** พร้อมผลการทดสอบความแม่นยำสูงถึง **100.00% (Test Accuracy)**
 
 ---
 
@@ -14,24 +15,36 @@
 
 ```text
 Fruit Classifier/
-├── dataset/                    # โฟลเดอร์เก็บภาพแบ่งตามคลาส (540 รูป รวม 9 ชนิด จาก Kaggle Fruits-360)
-│   ├── apple/                  # ภาพแอปเปิ้ล (60 รูป)
-│   ├── banana/                 # ภาพกล้วย (60 รูป)
-│   ├── orange/                 # ภาพส้ม (60 รูป)
-│   ├── grape/                  # ภาพองุ่น (60 รูป)
-│   ├── watermelon/             # ภาพแตงโม (60 รูป)
-│   ├── lemon/                  # ภาพเลมอน (60 รูป)
-│   ├── strawberry/             # ภาพสตรอว์เบอร์รี (60 รูป)
-│   ├── pineapple/              # ภาพสับปะรด (60 รูป)
-│   └── mango/                  # ภาพมะม่วง (60 รูป)
-├── download_fruits360.py       # สคริปต์ดาวน์โหลดชุดข้อมูลมาตรฐาน Fruits-360 (Kaggle)
+├── dataset/                    # โฟลเดอร์เก็บภาพแบ่งตามคลาส (1,260 รูป รวม 21 ชนิด คลาสละ 60 รูป)
+│   ├── apple/                  # ภาพแอปเปิ้ล 🍎
+│   ├── avocado/                # ภาพอะโวคาโด 🥑
+│   ├── banana/                 # ภาพกล้วย 🍌
+│   ├── coconut/                # ภาพมะพร้าว 🥥
+│   ├── dragonfruit/            # ภาพแก้วมังกร 🐲
+│   ├── durian/                 # ภาพทุเรียน 👑
+│   ├── grape/                  # ภาพองุ่น 🍇
+│   ├── guava/                  # ภาพฝรั่ง 🍐
+│   ├── kiwi/                   # ภาพกีวี 🥝
+│   ├── lemon/                  # ภาพเลมอน 🍋
+│   ├── lychee/                 # ภาพลิ้นจี่ 🍒
+│   ├── mango/                  # ภาพมะม่วง 🥭
+│   ├── mangosteen/             # ภาพมังคุด 👑
+│   ├── orange/                 # ภาพส้ม 🍊
+│   ├── papaya/                 # ภาพมะละกอ 🍈
+│   ├── pineapple/              # ภาพสับปะรด 🍍
+│   ├── pomegranate/            # ภาพทับทิม 🍎
+│   ├── rambutan/               # ภาพเงาะ 🔴
+│   ├── salak/                  # ภาพสละ 🌰
+│   ├── strawberry/             # ภาพสตรอว์เบอร์รี 🍓
+│   └── watermelon/             # ภาพแตงโม 🍉
+├── download_fruits360.py       # สคริปต์ดาวน์โหลดชุดข้อมูล 21 ผลไม้ (Fruits-360 + ทุเรียน)
 ├── download_images.py          # สคริปต์ดาวน์โหลดภาพทางเลือก
-├── train.py                    # สคริปต์สกัดฟีเจอร์ เทรน และประเมินผลโมเดล
+├── train.py                    # สคริปต์สกัดฟีเจอร์ เทรน และประเมินผลโมเดล 21 คลาส
 ├── app.py                      # หน้าเว็บ Interactive UI ด้วย Gradio (Minimalist)
 ├── version.py                  # ไฟล์ระบุเวอร์ชันและ Metadata ของโครงการ
-├── fruit_model.pkl             # โมเดล SVM RBF ที่เทรนเสร็จแล้ว (Accuracy 98.15%)
-├── confusion_matrix.png        # กราฟ Confusion Matrix แสดงผลความแม่นยำ 9 คลาส
-├── classification_report.txt   # รายงานผล Precision, Recall, F1-Score
+├── fruit_model.pkl             # โมเดล SVM RBF ที่เทรนเสร็จแล้ว (Accuracy 100.00%)
+├── confusion_matrix.png        # กราฟ Confusion Matrix แสดงผลความแม่นยำ 21 คลาส
+├── classification_report.txt   # รายงานผล Precision, Recall, F1-Score (21 คลาส)
 └── requirements.txt            # รายการไลบรารีที่จำเป็น
 ```
 
@@ -114,6 +127,18 @@ python app.py
 ---
 
 ## 📌 บันทึกประวัติเวอร์ชัน (Version History & Changelog)
+
+### **v1.0.6 (2026-09-24) - Mega Expansion to 21 Fruit Classes (1,260 Images, 100.00% Accuracy)**
+- 👑 **Massive Dataset Expansion (21 Classes & Thai Fruits Edition):**
+  - เพิ่มชุดข้อมูลผลไม้ขึ้นเป็น **21 ชนิดผลไม้** รวมทั้งสิ้น **1,260 รูปภาพ** (คลาสละ 60 ภาพ)
+  - ครอบคลุมผลไม้ไทยยอดนิยมและเอกลักษณ์สูง: **ทุเรียน 👑, มังคุด 👑, เงาะ 🔴, แก้วมังกร 🐲, มะละกอ 🍈, มะพร้าว 🥥, ฝรั่ง 🍐, ลิ้นจี่ 🍒, สละ 🌰**
+  - พร้อมผลไม้ยอดนิยมระดับโลก: **อะโวคาโด 🥑, กีวี 🥝, ทับทิม 🍎, แอปเปิ้ล, กล้วย, ส้ม, เลมอน, สตรอว์เบอร์รี, แตงโม, องุ่น, สับปะรด, มะม่วง**
+- 🎯 **Flawless 100% Evaluation Performance:**
+  - สกัดฟีเจอร์ระดับสูงแบบ `combined` (Spatial Pixels + RGB Histograms + HSV Color Distribution) รวม 12,392 มิติ
+  - ประเมินผลบน Test Set (252 รูปภาพที่โมเดลไม่เคยเห็น): **Accuracy สูงสุดระดับ 100.00%** (Precision & Recall 1.00 ครบทุก 21 คลาส)
+- 🎨 **Enhanced Minimalist UI:**
+  - อัปเดตแถบแสดงความมั่นใจแสดง Top-5 Predictions
+  - อัปเดต Empty State และ Header ให้สวยงาม ทันสมัย รองรับทั้ง 21 ผลไม้
 
 ### **v1.0.5 (2026-09-24) - Kaggle Fruits-360 Dataset Integration (9 Classes, 540 Images, 98.15% Accuracy)**
 - 🏆 **Kaggle Fruits-360 Dataset:**
