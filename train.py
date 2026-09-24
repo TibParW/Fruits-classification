@@ -160,17 +160,17 @@ FRUIT_KEYWORD_MAP = {
 
 
 def format_class_name(class_name: str) -> str:
-    """แปลงชื่อคลาสภาษาอังกฤษเป็นชื่อแสดงผลภาษาไทย + ภาษาอังกฤษ + Emoji"""
+    """แปลงชื่อคลาสภาษาอังกฤษเป็นชื่อแสดงผลภาษาไทย + ภาษาอังกฤษ (แบบทางการ ไม่แสดง Emoji)"""
     cls_lower = class_name.lower().replace("_", " ")
     pretty_en = " ".join([w.capitalize() for w in cls_lower.split()])
 
     # เรียงลำดับคำค้นหาตามความยาว (คำยาวกว่าตรวจก่อน เช่น mangostan ก่อน mango)
     sorted_keywords = sorted(FRUIT_KEYWORD_MAP.items(), key=lambda x: len(x[0]), reverse=True)
-    for keyword, (th_name, emoji) in sorted_keywords:
+    for keyword, (th_name, _) in sorted_keywords:
         if keyword in cls_lower:
-            return f"{th_name} ({pretty_en} {emoji})"
+            return f"{th_name} ({pretty_en})"
 
-    return f"{pretty_en} 🌿"
+    return f"{pretty_en}"
 
 
 def build_thai_labels(classes):
