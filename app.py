@@ -44,15 +44,63 @@ EMPTY_STATE_HTML = """
 """
 
 
-def predict_fruit(image: Image.Image):
-    """ฟังก์ชันทำนายผลสำหรับ Gradio (พร้อมระบบย่อภาพขนาดใหญ่จากกล้องมือถืออัตโนมัติ)"""
+def auto_center_crop(image: Image.Image, mode: str = "square_1_1") -> Image.Image:
+    """
+    ระบบตัดขอบภาพกึ่งกลางอัตโนมัติ (Auto Center-Crop) สำหรับภาพถ่ายมือถือและกล้อง
+    - 'square_1_1': ครอบตัด 1:1 จัตุรัสกึ่งกลางภาพอัตโนมัติ (แก้ไขปัญหาสัดส่วนเพี้ยนจากกล้องมือถือแนวตั้ง 16:9 และ 4:3)
+    - 'zoom_80': ครอบตัด 1:1 พร้อมซูมโฟกัสกึ่งกลาง 80% (ตัดสิ่งรบกวน ขอบโต๊ะ ขอบจอ บริเวณขอบภาพ)
+    - 'none': ภาพเต็มต้นฉบับ ไม่ตัดขอบ
+    """
+    if mode == "none" or image is None:
+        return image
+
+    w, h = image.size
+
+    # ตรวจจับและตัดแถบดำ/ขอบมืดรอบนอก (เช่น ขอบจอ iPad, ขอบกรอบสีดำจากการถ่ายหน้าจอ)
+    try:
+        arr = np.array(image.convert("RGB"))
+        row_means = arr.mean(axis=(1, 2))
+        col_means = arr.mean(axis=(0, 2))
+
+        # หากขอบภาพด้านใดด้านหนึ่งมืดผิดปกติ (< 45) ซึ่งเกิดจากการถ่ายขอบจอหรือแถบดำ letterbox
+        if row_means[0] < 45 or row_means[-1] < 45 or col_means[0] < 45 or col_means[-1] < 45:
+            valid_rows = np.where(row_means > 45)[0]
+            valid_cols = np.where(col_means > 45)[0]
+            if len(valid_rows) > 0 and len(valid_cols) > 0:
+                y0, y1 = valid_rows[0], valid_rows[-1]
+                x0, x1 = valid_cols[0], valid_cols[-1]
+                if (y1 - y0) > 0.3 * h and (x1 - x0) > 0.3 * w:
+                    image = image.crop((x0, y0, x1, y1))
+                    w, h = image.size
+    except Exception:
+        pass
+
+    # ครอบตัดเป็นสี่เหลี่ยมจัตุรัส 1:1 กึ่งกลางภาพ (Square Center-Crop)
+    min_dim = min(w, h)
+    left = (w - min_dim) // 2
+    top = (h - min_dim) // 2
+    square_img = image.crop((left, top, left + min_dim, top + min_dim))
+
+    # โหมด Zoom 80%
+    if mode == "zoom_80":
+        sw, sh = square_img.size
+        cs = int(sw * 0.80)
+        cl = (sw - cs) // 2
+        ct = (sh - cs) // 2
+        return square_img.crop((cl, ct, cl + cs, ct + cs))
+
+    return square_img
+
+
+def predict_fruit(image: Image.Image, crop_mode: str = "square_1_1"):
+    """ฟังก์ชันทำนายผลสำหรับ Gradio (พร้อมระบบ Auto Center-Crop และย่อภาพจากกล้องมือถืออัตโนมัติ)"""
     if image is None:
-        return None, EMPTY_STATE_HTML, None
+        return None, EMPTY_STATE_HTML, None, None
 
     # ย่อภาพความละเอียดสูงจากกล้องมือถือทันที (แก้ปัญหาค้าง / โหลดนาน / RAM เต็มบน Render)
     try:
         image = image.copy()
-        image.thumbnail((640, 640), Image.Resampling.LANCZOS)
+        image.thumbnail((800, 800), Image.Resampling.LANCZOS)
     except Exception:
         pass
 
@@ -62,7 +110,10 @@ def predict_fruit(image: Image.Image):
             ❌ ไม่พบไฟล์โมเดล <code>fruit_model.pkl</code> กรุณารัน train.py ก่อน
         </div>
         """
-        return None, error_html, None
+        return None, error_html, None, None
+
+    # ทำการตัดขอบ Auto Center-Crop ตามโหมดที่เลือก
+    cropped_image = auto_center_crop(image, mode=crop_mode)
 
     pipeline = model_data["pipeline"]
     classes = model_data["classes"]
@@ -70,16 +121,16 @@ def predict_fruit(image: Image.Image):
     feature_mode = model_data.get("feature_mode", "combined")
     img_size = model_data.get("img_size", (32, 32))
 
-    # สกัดฟีเจอร์จากรูปที่ผู้ใช้อัปโหลด
+    # สกัดฟีเจอร์จากรูปที่ผ่านการตัดขอบแล้ว
     try:
-        features = extract_features(image, mode=feature_mode, img_size=img_size)
+        features = extract_features(cropped_image, mode=feature_mode, img_size=img_size)
     except Exception as e:
         error_html = f"""
         <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; color: #991b1b; font-size: 0.9rem;">
             เกิดข้อผิดพลาดในการแปลงรูปภาพ: {e}
         </div>
         """
-        return None, error_html, None
+        return None, error_html, None, None
 
     # คำนวณความน่าจะเป็นของแต่ละคลาส
     probabilities = pipeline.predict_proba([features])[0]
@@ -94,7 +145,14 @@ def predict_fruit(image: Image.Image):
         confidence_dict[display_name] = float(probabilities[idx])
 
     # ภาพย่อ 32x32 สำหรับเทคนิคการประมวลผล
-    thumbnail_preview = image.convert("RGB").resize(img_size)
+    thumbnail_preview = cropped_image.convert("RGB").resize(img_size)
+
+    # ป้ายข้อความระบุโหมดการครอบตัด
+    crop_badge_text = "✂️ Center-Crop 1:1"
+    if crop_mode == "zoom_80":
+        crop_badge_text = "🔍 ซูมโฟกัส 80%"
+    elif crop_mode == "none":
+        crop_badge_text = "🖼️ ภาพเต็ม (Full)"
 
     # สร้างการ์ดผลลัพธ์แบบ Dynamic Theme HTML (รองรับทั้ง Light และ Dark mode)
     top_label_th = thai_labels.get(pred_class, pred_class.capitalize())
@@ -116,12 +174,16 @@ def predict_fruit(image: Image.Image):
                 โมเดล {model_type}
             </span>
             <span style="background: var(--badge-bg, #f1f5f9); color: var(--badge-text, #334155); font-size: 0.82rem; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--card-border, #e2e8f0);">
-                {feature_mode} ({img_size[0]}×{img_size[1]} px)
+                {crop_badge_text}
+            </span>
+            <span style="background: var(--badge-bg, #f1f5f9); color: var(--badge-text, #334155); font-size: 0.82rem; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--card-border, #e2e8f0);">
+                {img_size[0]}×{img_size[1]} px
             </span>
         </div>
     </div>
     """
-    return confidence_dict, summary_html, thumbnail_preview
+    return confidence_dict, summary_html, cropped_image, thumbnail_preview
+
 
 
 
@@ -272,6 +334,15 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                         sources=["upload", "webcam", "clipboard"],
                         height=260
                     )
+                    crop_mode = gr.Radio(
+                        choices=[
+                            ("สี่เหลี่ยม 1:1 (Center-Crop แนะนำสำหรับมือถือ)", "square_1_1"),
+                            ("ซูมโฟกัสกึ่งกลาง 80% (Zoom 80%)", "zoom_80"),
+                            ("ไม่ตัดขอบ (ภาพเต็มต้นฉบับ)", "none"),
+                        ],
+                        value="square_1_1",
+                        label="✂️ การตัดขอบภาพอัตโนมัติ (Auto Center-Crop)"
+                    )
                     predict_btn = gr.Button("🔍 วิเคราะห์ภาพ", variant="primary")
 
                 with gr.Column(scale=1):
@@ -280,28 +351,33 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                         label="ระดับความมั่นใจ (Confidence Breakdown)",
                         num_top_classes=5
                     )
-                    with gr.Accordion("🔍 ภาพที่โมเดลประมวลผล (32×32 px)", open=False):
-                        output_thumb = gr.Image(
-                            label="Resized Thumbnail",
-                            height=120,
-                            width=120,
-                            interactive=False
-                        )
+                    with gr.Accordion("🔍 ภาพที่ผ่านการประมวลผล (Preprocessed Previews)", open=False):
+                        with gr.Row():
+                            output_cropped = gr.Image(
+                                label="ภาพหลัง Auto Center-Crop",
+                                height=130,
+                                interactive=False
+                            )
+                            output_thumb = gr.Image(
+                                label="Thumbnail ที่โมเดลอ่าน (32×32 px)",
+                                height=130,
+                                interactive=False
+                            )
 
             # ภาพตัวอย่างสำหรับให้อาจารย์และผู้ใช้ทดสอบทันที (Sample Images)
             sample_files = [
-                ["sample_images/durian.jpg"],
-                ["sample_images/mangosteen.jpg"],
-                ["sample_images/rambutan.jpg"],
-                ["sample_images/jackfruit.jpg"],
-                ["sample_images/longan.jpg"],
-                ["sample_images/santol.jpg"],
-                ["sample_images/custard_apple.jpg"],
-                ["sample_images/dragonfruit.jpg"],
-                ["sample_images/mango.jpg"],
-                ["sample_images/coconut.jpg"],
-                ["sample_images/banana.jpg"],
-                ["sample_images/apple.jpg"],
+                ["sample_images/durian.jpg", "square_1_1"],
+                ["sample_images/mangosteen.jpg", "square_1_1"],
+                ["sample_images/rambutan.jpg", "square_1_1"],
+                ["sample_images/jackfruit.jpg", "square_1_1"],
+                ["sample_images/longan.jpg", "square_1_1"],
+                ["sample_images/santol.jpg", "square_1_1"],
+                ["sample_images/custard_apple.jpg", "square_1_1"],
+                ["sample_images/dragonfruit.jpg", "square_1_1"],
+                ["sample_images/mango.jpg", "square_1_1"],
+                ["sample_images/coconut.jpg", "square_1_1"],
+                ["sample_images/banana.jpg", "square_1_1"],
+                ["sample_images/apple.jpg", "square_1_1"],
             ]
             valid_samples = [s for s in sample_files if Path(s[0]).exists()]
             if valid_samples:
@@ -314,26 +390,37 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                     )
                     gr.Examples(
                         examples=valid_samples,
-                        inputs=input_image,
-                        outputs=[output_label, output_summary, output_thumb],
+                        inputs=[input_image, crop_mode],
+                        outputs=[output_label, output_summary, output_cropped, output_thumb],
                         fn=predict_fruit,
                         cache_examples=False,
                         label="ภาพตัวอย่างผลไม้ (Sample Images)"
                     )
 
-            # รองรับทั้งคลิกปุ่ม และ Auto-predict ทันทีที่อัปโหลดรูป
+            # รองรับทั้งคลิกปุ่ม, เปลี่ยนโหมดตัดขอบ, และ Auto-predict ทันทีที่อัปโหลดรูป
             predict_btn.click(
                 fn=predict_fruit,
-                inputs=input_image,
-                outputs=[output_label, output_summary, output_thumb],
+                inputs=[input_image, crop_mode],
+                outputs=[output_label, output_summary, output_cropped, output_thumb],
                 show_progress="minimal"
             )
             input_image.change(
                 fn=predict_fruit,
-                inputs=input_image,
-                outputs=[output_label, output_summary, output_thumb],
+                inputs=[input_image, crop_mode],
+                outputs=[output_label, output_summary, output_cropped, output_thumb],
                 show_progress="minimal"
             )
+            crop_mode.change(
+                fn=predict_fruit,
+                inputs=[input_image, crop_mode],
+                outputs=[output_label, output_summary, output_cropped, output_thumb],
+                show_progress="minimal"
+            )
+            input_image.clear(
+                fn=lambda: (None, EMPTY_STATE_HTML, None, None),
+                outputs=[output_label, output_summary, output_cropped, output_thumb]
+            )
+
 
         with gr.TabItem("📊 ประสิทธิภาพโมเดล (Metrics)"):
             gr.Markdown("#### 📈 ผลการประเมินโมเดลบน Test Set (Confusion Matrix & Classification Report)")
