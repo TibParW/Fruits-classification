@@ -1,0 +1,13 @@
+Model: Support Vector Machine (SVM RBF)
+Feature Mode: combined
+Accuracy: 87.88%
+
+              precision    recall  f1-score   support
+
+       apple       0.92      1.00      0.96        11
+      banana       0.90      0.82      0.86        11
+      orange       0.82      0.82      0.82        11
+
+    accuracy                           0.88        33
+   macro avg       0.88      0.88      0.88        33
+weighted avg       0.88      0.88      0.88        33
