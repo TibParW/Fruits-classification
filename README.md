@@ -1,6 +1,6 @@
 # 🍎🍌🍊 Fruit Classifier (ระบบจำแนกชนิดผลไม้ด้วย Machine Learning)
 
-![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
@@ -107,6 +107,11 @@ python app.py
 ---
 
 ## 📌 บันทึกประวัติเวอร์ชัน (Version History & Changelog)
+
+### **v1.0.3 (2026-09-24) - Clean Minimalist UI Cleanup**
+- 🧹 **UI Cleanup:**
+  - ลบส่วนภาพตัวอย่าง (Examples) และแถบข้อความตัวอย่างด้านล่างออกตามความต้องการของผู้ใช้
+  - ลบแถบ Footer ท้ายเว็บออกเพื่อความมินิมอล เรียบง่าย และสบายตาสูงสุด
 
 ### **v1.0.2 (2026-09-24) - Minimalist UI Redesign**
 - 🎨 **Minimalist Design & UX:**

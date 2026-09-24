@@ -117,17 +117,6 @@ def predict_fruit(image: Image.Image):
     return confidence_dict, summary_html, thumbnail_preview
 
 
-def get_examples():
-    """รวบรวมตัวอย่างรูปภาพจากโฟลเดอร์ dataset สำหรับปุ่มคลิกทดสอบด่วน"""
-    examples = []
-    dataset_dir = Path("dataset")
-    if dataset_dir.exists():
-        for class_dir in sorted(dataset_dir.iterdir()):
-            if class_dir.is_dir() and not class_dir.name.startswith("_"):
-                images = list(class_dir.glob("*.jpg")) + list(class_dir.glob("*.jpeg")) + list(class_dir.glob("*.png"))
-                if images:
-                    examples.append(str(images[0]))
-    return examples
 
 
 # กำหนดสไตล์ Minimalist CSS
@@ -220,15 +209,6 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                             interactive=False
                         )
 
-            # ใส่ตัวอย่างรูปภาพ
-            example_list = get_examples()
-            if example_list:
-                gr.Markdown("##### 💡 คลิกรูปตัวอย่างเพื่อทดสอบ:")
-                gr.Examples(
-                    examples=example_list,
-                    inputs=input_image,
-                    label=None
-                )
 
             # รองรับทั้งคลิกปุ่ม และ Auto-predict ทันทีที่อัปโหลดรูป
             predict_btn.click(
@@ -268,12 +248,6 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                         interactive=False
                     )
 
-    # Minimal Footer
-    gr.HTML(f"""
-    <div style="text-align: center; margin-top: 2rem; padding-top: 1.2rem; border-top: 1px solid #f1f5f9; color: #94a3b8; font-size: 0.8rem;">
-        Fruit Classifier v{__version__} • พัฒนาโดย TibParW • วท.บ. วิทยาการคอมพิวเตอร์ มหาวิทยาลัยเกษตรศาสตร์
-    </div>
-    """)
 
 # Export top-level 'app' สำหรับ ASGI / Render / Vercel
 from fastapi import FastAPI
