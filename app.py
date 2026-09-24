@@ -183,5 +183,17 @@ app = gr.mount_gradio_app(FastAPI(), demo, path="/")
 
 
 if __name__ == "__main__":
-    print("\n กำลังเริ่มรัน Gradio Web Server...")
-    demo.launch(theme=gr.themes.Soft(), inbrowser=True)
+    import argparse
+    parser = argparse.ArgumentParser(description="รันเว็บแอปจำแนกชนิดผลไม้ด้วย Gradio")
+    parser.add_argument("--share", action="store_true", help="สร้าง Public URL ผ่าน gradio.live เพื่อแชร์ออนไลน์")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 7860)), help="พอร์ตที่ใช้รันเซิร์ฟเวอร์")
+    args = parser.parse_args()
+
+    print(f"\n กำลังเริ่มรัน Gradio Web Server บนพอร์ต {args.port} (share={args.share})...")
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=args.port,
+        share=args.share,
+        theme=gr.themes.Soft(),
+        inbrowser=not args.share
+    )
