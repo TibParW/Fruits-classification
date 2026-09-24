@@ -1,15 +1,14 @@
 Model: Logistic Regression (Linear Classifier)
-Classes: 300
+Classes: 267
 Feature Mode: combined
-Accuracy: 89.80%
+Accuracy: 99.40%
 
                         precision    recall  f1-score   support
 
-             almonds_1       0.83      1.00      0.91         5
-             ambarella       0.00      0.00      0.00         5
+             almonds_1       1.00      1.00      1.00         5
               apple_10       1.00      1.00      1.00         5
               apple_11       1.00      1.00      1.00         5
-              apple_12       0.83      1.00      0.91         5
+              apple_12       1.00      1.00      1.00         5
               apple_13       1.00      1.00      1.00         5
               apple_14       1.00      1.00      1.00         5
               apple_17       1.00      1.00      1.00         5
@@ -43,7 +42,6 @@ Accuracy: 89.80%
        avocado_black_1       1.00      1.00      1.00         5
        avocado_black_2       1.00      1.00      1.00         5
        avocado_green_1       1.00      1.00      1.00         5
-                  bael       0.00      0.00      0.00         5
               banana_1       1.00      1.00      1.00         5
               banana_3       1.00      1.00      1.00         5
               banana_4       1.00      1.00      1.00         5
@@ -51,35 +49,27 @@ Accuracy: 89.80%
           banana_red_1       1.00      1.00      1.00         5
             bean_pod_1       1.00      1.00      1.00         5
             beetroot_1       1.00      1.00      1.00         5
-             betel_nut       0.40      0.40      0.40         5
-                bignay       0.00      0.00      0.00         5
-               bilimbi       0.20      0.40      0.27         5
           blackberry_1       1.00      1.00      1.00         5
           blackberry_2       1.00      1.00      1.00         5
           blackberry_3       1.00      1.00      1.00         5
           blackberry_4       1.00      1.00      1.00         5
           blackberry_5       1.00      1.00      1.00         5
            blueberry_1       1.00      1.00      1.00         5
-           bread_fruit       0.00      0.00      0.00         5
-         burmese_grape       0.00      0.00      0.00         5
          cabbage_red_1       1.00      1.00      1.00         5
        cabbage_white_1       1.00      1.00      1.00         5
         cactus_fruit_1       1.00      1.00      1.00         5
   cactus_fruit_green_1       1.00      1.00      1.00         5
     cactus_fruit_red_1       1.00      1.00      1.00         5
-               caimito       0.00      0.00      0.00         5
            caju_seed_1       1.00      1.00      1.00         5
-              canistel       0.20      0.20      0.20         5
           cantaloupe_1       1.00      1.00      1.00         5
           cantaloupe_2       1.00      1.00      1.00         5
           cantaloupe_3       1.00      1.00      1.00         5
-           carambola_1       1.00      1.00      1.00         5
+           carambola_1       1.00      0.80      0.89         5
            carambola_2       1.00      1.00      1.00         5
            carambola_3       1.00      1.00      1.00         5
-              carrot_1       1.00      1.00      1.00         5
+              carrot_1       0.83      1.00      0.91         5
          cauliflower_1       1.00      1.00      1.00         5
               celery_1       1.00      1.00      1.00         5
-              cempedak       0.14      0.20      0.17         5
            cherimoya_1       1.00      1.00      1.00         5
               cherry_1       1.00      1.00      1.00         5
               cherry_2       1.00      1.00      1.00         5
@@ -99,7 +89,6 @@ Accuracy: 89.80%
    cherry_wax_yellow_1       1.00      1.00      1.00         5
             chestnut_1       1.00      1.00      1.00         5
           clementine_1       1.00      1.00      1.00         5
-           cluster_fig       0.50      0.20      0.29         5
                cocos_1       1.00      1.00      1.00         5
                 corn_1       1.00      1.00      1.00         5
            corn_husk_1       1.00      1.00      1.00         5
@@ -110,23 +99,19 @@ Accuracy: 89.80%
            cucumber_13       1.00      1.00      1.00         5
             cucumber_3       1.00      1.00      1.00         5
             cucumber_4       1.00      1.00      1.00         5
-            cucumber_5       0.71      1.00      0.83         5
+            cucumber_5       1.00      1.00      1.00         5
             cucumber_6       1.00      1.00      1.00         5
             cucumber_7       1.00      1.00      1.00         5
             cucumber_8       1.00      1.00      1.00         5
             cucumber_9       1.00      1.00      1.00         5
-         custard_apple       0.33      0.40      0.36         5
                dates_1       1.00      1.00      1.00         5
                dates_2       1.00      1.00      1.00         5
-                durian       0.20      0.20      0.20         5
+                durian       1.00      1.00      1.00         5
             eggplant_1       1.00      1.00      1.00         5
        eggplant_long_1       1.00      1.00      1.00         5
-        elephant_apple       0.00      0.00      0.00         5
-                emblic       0.25      0.20      0.22         5
                  fig_1       1.00      1.00      1.00         5
-              gandaria       0.00      0.00      0.00         5
          garlic_bulb_1       1.00      1.00      1.00         5
-              ginger_2       1.00      1.00      1.00         5
+              ginger_2       1.00      0.80      0.89         5
          ginger_root_1       1.00      1.00      1.00         5
           gooseberry_1       1.00      1.00      1.00         5
           granadilla_1       1.00      1.00      1.00         5
@@ -142,36 +127,22 @@ Accuracy: 89.80%
     grapefruit_white_1       1.00      1.00      1.00         5
                guava_1       1.00      1.00      1.00         5
             hazelnut_1       1.00      1.00      1.00         5
-              hog_plum       0.50      0.40      0.44         5
          huckleberry_1       1.00      1.00      1.00         5
-             jackfruit       0.00      0.00      0.00         5
-        jamaica_cherry       0.00      0.00      0.00         5
-                jambul       0.00      0.00      0.00         5
-                jujube       0.00      0.00      0.00         5
-           kaffir_lime       0.20      0.20      0.20         5
                 kaki_1       1.00      1.00      1.00         5
                 kiwi_1       1.00      1.00      1.00         5
             kohlrabi_1       1.00      1.00      1.00         5
             kumquats_1       1.00      1.00      1.00         5
-               langsat       0.14      0.20      0.17         5
                lemon_1       1.00      1.00      1.00         5
          lemon_meyer_1       1.00      1.00      1.00         5
                limes_1       1.00      1.00      1.00         5
-                longan       0.17      0.20      0.18         5
               lychee_1       1.00      1.00      1.00         5
-                mabolo       0.25      0.20      0.22         5
-           malay_apple       0.00      0.00      0.00         5
            mandarine_1       1.00      1.00      1.00         5
                mango_1       1.00      1.00      1.00         5
            mango_red_1       1.00      1.00      1.00         5
            mangostan_1       1.00      1.00      1.00         5
-       manila_tamarind       0.00      0.00      0.00         5
             maracuja_1       1.00      1.00      1.00         5
   melon_piel_de_sapo_1       1.00      1.00      1.00         5
-             monkfruit       0.00      0.00      0.00         5
-               morinda       0.14      0.20      0.17         5
             mulberry_1       1.00      1.00      1.00         5
-                 mundu       0.50      0.40      0.44         5
  mushroom_champignon_1       1.00      1.00      1.00         5
  mushroom_champignon_2       1.00      1.00      1.00         5
  mushroom_champignon_3       1.00      1.00      1.00         5
@@ -181,7 +152,7 @@ Accuracy: 89.80%
       nectarine_flat_2       1.00      1.00      1.00         5
                  nut_1       1.00      1.00      1.00         5
                  nut_2       1.00      1.00      1.00         5
-                 nut_3       1.00      1.00      1.00         5
+                 nut_3       0.83      1.00      0.91         5
                  nut_4       1.00      1.00      1.00         5
                  nut_5       1.00      1.00      1.00         5
           nut_forest_1       1.00      1.00      1.00         5
@@ -195,14 +166,14 @@ Accuracy: 89.80%
               orange_1       1.00      1.00      1.00         5
               orange_2       1.00      1.00      1.00         5
               orange_3       1.00      1.00      1.00         5
-              orange_4       1.00      1.00      1.00         5
+              orange_4       1.00      0.60      0.75         5
        orange_peeled_1       1.00      1.00      1.00         5
               papaya_1       1.00      1.00      1.00         5
               papaya_2       1.00      1.00      1.00         5
        passion_fruit_1       1.00      1.00      1.00         5
                peach_1       1.00      1.00      1.00         5
                peach_2       1.00      1.00      1.00         5
-               peach_3       1.00      0.60      0.75         5
+               peach_3       1.00      1.00      1.00         5
                peach_4       1.00      1.00      1.00         5
                peach_5       1.00      1.00      1.00         5
                peach_6       0.71      1.00      0.83         5
@@ -220,17 +191,17 @@ Accuracy: 89.80%
                 pear_6       1.00      1.00      1.00         5
                 pear_7       1.00      1.00      1.00         5
                 pear_8       1.00      1.00      1.00         5
-                pear_9       0.71      1.00      0.83         5
+                pear_9       1.00      1.00      1.00         5
           pear_abate_1       1.00      1.00      1.00         5
         pear_forelle_1       1.00      1.00      1.00         5
          pear_kaiser_1       1.00      1.00      1.00         5
-        pear_monster_1       1.00      1.00      1.00         5
+        pear_monster_1       0.83      1.00      0.91         5
             pear_red_1       1.00      1.00      1.00         5
           pear_stone_1       1.00      1.00      1.00         5
-       pear_williams_1       1.00      1.00      1.00         5
-              pepino_1       1.00      1.00      1.00         5
+       pear_williams_1       1.00      0.60      0.75         5
+              pepino_1       0.71      1.00      0.83         5
               pepper_1       1.00      1.00      1.00         5
-              pepper_2       1.00      0.60      0.75         5
+              pepper_2       1.00      1.00      1.00         5
         pepper_green_1       1.00      1.00      1.00         5
        pepper_orange_1       1.00      1.00      1.00         5
        pepper_orange_2       0.83      1.00      0.91         5
@@ -250,7 +221,7 @@ Accuracy: 89.80%
                 plum_1       1.00      1.00      1.00         5
                 plum_2       1.00      1.00      1.00         5
                 plum_3       1.00      1.00      1.00         5
-                plum_4       0.83      1.00      0.91         5
+                plum_4       1.00      1.00      1.00         5
                 plum_5       1.00      1.00      1.00         5
          pomegranate_1       1.00      1.00      1.00         5
       pomelo_sweetie_1       1.00      1.00      1.00         5
@@ -258,9 +229,8 @@ Accuracy: 89.80%
           potato_red_2       1.00      1.00      1.00         5
         potato_sweet_1       1.00      1.00      1.00         5
         potato_white_1       1.00      1.00      1.00         5
-               pulasan       0.25      0.20      0.22         5
               quince_1       1.00      1.00      1.00         5
-              quince_2       1.00      1.00      1.00         5
+              quince_2       1.00      0.80      0.89         5
               quince_3       1.00      1.00      1.00         5
               quince_4       1.00      1.00      1.00         5
             rambutan_1       1.00      1.00      1.00         5
@@ -272,8 +242,6 @@ Accuracy: 89.80%
            raspberry_6       1.00      1.00      1.00         5
           redcurrant_1       1.00      1.00      1.00         5
                salak_1       1.00      1.00      1.00         5
-                santol       0.38      0.60      0.46         5
-             sapodilla       0.00      0.00      0.00         5
           strawberry_1       1.00      1.00      1.00         5
           strawberry_2       1.00      1.00      1.00         5
           strawberry_3       1.00      1.00      1.00         5
@@ -299,13 +267,12 @@ tomato_cherry_yellow_1       1.00      1.00      1.00         5
        tomato_maroon_1       1.00      1.00      1.00         5
        tomato_maroon_2       1.00      1.00      1.00         5
        tomato_yellow_1       1.00      1.00      1.00         5
-       velvet_tamarind       0.00      0.00      0.00         5
               walnut_1       1.00      1.00      1.00         5
           watermelon_1       1.00      1.00      1.00         5
             zucchini_1       1.00      1.00      1.00         5
        zucchini_dark_1       1.00      1.00      1.00         5
-      zucchini_green_1       1.00      0.60      0.75         5
+      zucchini_green_1       1.00      1.00      1.00         5
 
-              accuracy                           0.90      1500
-             macro avg       0.90      0.90      0.90      1500
-          weighted avg       0.90      0.90      0.90      1500
+              accuracy                           0.99      1335
+             macro avg       1.00      0.99      0.99      1335
+          weighted avg       1.00      0.99      0.99      1335
