@@ -1,197 +1,162 @@
-# 🍎🍌🍊 Fruit Classifier (ระบบจำแนกชนิดผลไม้ด้วย Machine Learning)
+# 🍎 โครงการพัฒนาระบบจำแนกชนิดผลไม้ (Fruit Classifier)
+## Machine Learning Image Classification & Gradio Web Application (300 Classes)
 
-![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
-![Classes](https://img.shields.io/badge/Classes-21%20Fruits-success.svg)
-![Accuracy](https://img.shields.io/badge/Accuracy-100%25-brightgreen.svg)
-
-ระบบจำแนกชนิดผลไม้พัฒนาด้วย **Python**, **Scikit-Learn (SVM RBF)** และ **Gradio** ต่อยอดแนวคิดจากโปรเจกต์ `digit_svm_app` ผสานชุดข้อมูลมาตรฐานระดับโลก **Fruits-360 (Kaggle)** ร่วมกับชุดข้อมูลผลไม้ไทยยอดนิยม ครอบคลุมผลไม้มากถึง **21 ชนิด** รวม **1,260 รูปภาพ** พร้อมผลการทดสอบความแม่นยำสูงถึง **100.00% (Test Accuracy)**
-
----
-
-## 📁 โครงสร้างโปรเจกต์ (Directory Structure)
-
-```text
-Fruit Classifier/
-├── dataset/                    # โฟลเดอร์เก็บภาพแบ่งตามคลาส (1,260 รูป รวม 21 ชนิด คลาสละ 60 รูป)
-│   ├── apple/                  # ภาพแอปเปิ้ล 🍎
-│   ├── avocado/                # ภาพอะโวคาโด 🥑
-│   ├── banana/                 # ภาพกล้วย 🍌
-│   ├── coconut/                # ภาพมะพร้าว 🥥
-│   ├── dragonfruit/            # ภาพแก้วมังกร 🐲
-│   ├── durian/                 # ภาพทุเรียน 👑
-│   ├── grape/                  # ภาพองุ่น 🍇
-│   ├── guava/                  # ภาพฝรั่ง 🍐
-│   ├── kiwi/                   # ภาพกีวี 🥝
-│   ├── lemon/                  # ภาพเลมอน 🍋
-│   ├── lychee/                 # ภาพลิ้นจี่ 🍒
-│   ├── mango/                  # ภาพมะม่วง 🥭
-│   ├── mangosteen/             # ภาพมังคุด 👑
-│   ├── orange/                 # ภาพส้ม 🍊
-│   ├── papaya/                 # ภาพมะละกอ 🍈
-│   ├── pineapple/              # ภาพสับปะรด 🍍
-│   ├── pomegranate/            # ภาพทับทิม 🍎
-│   ├── rambutan/               # ภาพเงาะ 🔴
-│   ├── salak/                  # ภาพสละ 🌰
-│   ├── strawberry/             # ภาพสตรอว์เบอร์รี 🍓
-│   └── watermelon/             # ภาพแตงโม 🍉
-├── download_fruits360.py       # สคริปต์ดาวน์โหลดชุดข้อมูล 21 ผลไม้ (Fruits-360 + ทุเรียน)
-├── download_images.py          # สคริปต์ดาวน์โหลดภาพทางเลือก
-├── train.py                    # สคริปต์สกัดฟีเจอร์ เทรน และประเมินผลโมเดล 21 คลาส
-├── app.py                      # หน้าเว็บ Interactive UI ด้วย Gradio (Minimalist)
-├── version.py                  # ไฟล์ระบุเวอร์ชันและ Metadata ของโครงการ
-├── fruit_model.pkl             # โมเดล SVM RBF ที่เทรนเสร็จแล้ว (Accuracy 100.00%)
-├── confusion_matrix.png        # กราฟ Confusion Matrix แสดงผลความแม่นยำ 21 คลาส
-├── classification_report.txt   # รายงานผล Precision, Recall, F1-Score (21 คลาส)
-└── requirements.txt            # รายการไลบรารีที่จำเป็น
-```
+![Classes](https://img.shields.io/badge/Classes-300%20Fruits-success.svg)
+![Accuracy](https://img.shields.io/badge/Test%20Accuracy-89.80%25-brightgreen.svg)
+![Deployment](https://img.shields.io/badge/Deployment-Render%20Live-brightgreen.svg)
 
 ---
 
-## ⚙️ การติดตั้ง (Setup & Installation)
+## 👥 ผู้จัดทำโครงการ (Authors)
 
-เปิด Terminal หรือ PowerShell ในโฟลเดอร์นี้ แล้วติดตั้งแพ็กเกจที่ต้องใช้:
+> **หมายเหตุ:** เรียงลำดับตามรหัสนิสิตจากน้อยไปมากตามเกณฑ์ข้อกำหนดของรายวิชา
+
+| ลำดับ | รหัสนิสิต | ชื่อ - นามสกุล | สาขาวิชา / ภาควิชา |
+| :---: | :---: | :--- | :--- |
+| 1 | `[รหัสนิสิต 10 หลัก]` | [นาย / นางสาว ชื่อ - นามสกุล] | ภาควิชาวิศวกรรมคอมพิวเตอร์ / วิทยาการคอมพิวเตอร์ |
+| 2 | `[รหัสนิสิต 10 หลัก]` | [นาย / นางสาว ชื่อ - นามสกุล] | ภาควิชาวิศวกรรมคอมพิวเตอร์ / วิทยาการคอมพิวเตอร์ *(หากมี)* |
+
+---
+
+## 🌐 ลิงก์ระบบและเว็บแอปพลิเคชัน (Live Application & Repository URLs)
+
+* **🌐 Web Application (Render Cloud):** [https://fruits-classification-j3ss.onrender.com](https://fruits-classification-j3ss.onrender.com)  
+  *(สามารถเปิดทดลองใช้งานผ่านอินเทอร์เน็ตได้ทันที 24/7 โดยไม่ต้องเปิดโปรแกรมบนเครื่องของนักศึกษา)*
+* **🐙 GitHub Repository:** [https://github.com/TibParW/Fruits-classification](https://github.com/TibParW/Fruits-classification)
+* **📈 Regression App:** *(ส่วนของ Regression Model เป็นโมเดลทำนายค่าต่อเนื่องที่พัฒนาในพาร์ทคู่ขนาน สามารถศึกษาและทดสอบการรันผ่านซอร์สโค้ดในโครงการ)*
+
+---
+
+## 💡 1. แนวคิด ปัญหาที่ต้องการแก้ และประโยชน์ของระบบ (Problem & Significance)
+
+### 1.1 ปัญหาที่ต้องการแก้ (Problem Statement)
+การระบุและจำแนกสายพันธุ์ผลไม้และพืชผลทางการเกษตรมีความสำคัญอย่างยิ่งต่อระบบห่วงโซ่อุปทาน (Supply Chain) การคัดเกรดผลผลิตอัตโนมัติ (Automated Agricultural Sorting) และระบบคิดเงินอัตโนมัติในซูเปอร์มาร์เก็ต (Smart Retail Self-Checkout) 
+
+อย่างไรก็ดี ผลไม้มีความหลากหลายทางชีวภาพสูงมาก ทั้งในแง่ของรูปทรง สีสัน และสายพันธุ์ย่อยที่มีลักษณะภายนอกใกล้เคียงกัน เช่น แอปเปิ้ลที่มีมากกว่า 19 สายพันธุ์ (เช่น Granny Smith, Golden, Red Delicious, Braeburn, Pink Lady ฯลฯ) ตลอดจนผลไม้ไทยและผลไม้เขตร้อนที่มีรูปทรงเปลือกซับซ้อน (เช่น ทุเรียน, มังคุด, เงาะ, ขนุน, ลำไย, กระท้อน, น้อยหน่า) การตรวจสอบด้วยสายตามนุษย์ต้องอาศัยแรงงานที่มีความชำนาญ ใช้เวลานาน และเกิดข้อผิดพลาดจากความเหนื่อยล้าได้ง่าย
+
+### 1.2 ประโยชน์ของระบบ (Benefits)
+1. **เพิ่มความแม่นยำและความเร็ว:** ช่วยระบุสายพันธุ์ผลไม้ได้อย่างรวดเร็วในเสี้ยววินาที รองรับการจำแนกได้ละเอียดถึง **300 คลาส**
+2. **รองรับผลไม้ไทยและผลไม้นำเข้า:** บูรณาการทั้งผลไม้สากลยอดนิยมและผลไม้ไทย/เขตร้อนหายากเข้าด้วยกัน
+3. **ทำงานได้บนระบบคลาวด์ขนาดเล็ก:** โมเดลมีขนาดกะทัดรัด (เพียง 3.45 MB) และกินหน่วยความจำต่ำมาก (< 100 MB RAM) ทำให้ประหยัดต้นทุนเซิร์ฟเวอร์ และทำงานได้อย่างรวดเร็วบนคลาวด์ฟรีเทียร์
+
+---
+
+## 📦 2. แหล่งที่มา จำนวนข้อมูล และการแบ่งชุดข้อมูล (Dataset & Splitting)
+
+### 2.1 แหล่งที่มาของข้อมูล (Data Sources)
+ชุดข้อมูลรวบรวมและคัดเลือกจาก 2 แหล่งข้อมูลเปิดมาตรฐานสากล:
+1. **Fruits-360 Dataset (Kaggle):** รวบรวมโดย Mihai Oltean เผยแพร่ภายใต้สัญญาอนุญาต CC BY-SA 4.0 เป็นภาพผลไม้ในสตูดิโอที่มีแสงสม่ำเสมอ หมุน 360 องศา และฉากหลังสีขาว
+2. **Fruit-262 Dataset (Kaggle / Public Domain):** รวบรวมภาพถ่ายผลไม้จริงจากสภาพแวดล้อมธรรมชาติ โดยคัดเลือกเฉพาะผลไม้ไทยและผลไม้เขตร้อนหายากที่ไม่มีใน Fruits-360 จำนวน 33 ชนิด (เช่น ขนุน, ลำไย, กระท้อน, น้อยหน่า, ตะลิงปลิง, มะตูม, ลองกอง, จำปาดะ, มะกรูด, มะปราง ฯลฯ)
+
+### 2.2 จำนวนข้อมูลและการแบ่งชุดฝึก/ชุดทดสอบ (Dataset Distribution)
+* **จำนวนคลาสทั้งหมด:** **300 คลาส (Classes)**
+* **จำนวนภาพต่อคลาส:** คลาสละ **25 รูปภาพ** เท่ากันทุกคลาส (Balanced Dataset)
+* **จำนวนภาพรวมทั้งหมด:** **7,500 รูปภาพ** ($300 \times 25$)
+* **การแบ่งชุดข้อมูล (Data Splitting):** ใช้วิธี **Stratified Train-Test Split (80:20)** โดยกำหนด `random_state=42` และ `stratify=y` เพื่อคงสัดส่วนข้อมูลในทุกคลาสอย่างสมดุล:
+  * **ชุดฝึกสอน (Train Set 80%):** **6,000 รูปภาพ** (คลาสละ 20 รูป)
+  * **ชุดทดสอบ (Test Set 20%):** **1,500 รูปภาพ** (คลาสละ 5 รูป)
+* **การป้องกัน Data Leakage:** ชุดทดสอบ (Test Set) ถูกแยกเก็บไว้ต่างหากเพื่อใช้ประเมินผลลัพธ์ขั้นสุดท้ายเท่านั้น และไม่ถูกนำมาใช้ในขั้นตอนการฝึกหรือปรับจูนพารามิเตอร์ใด ๆ
+
+---
+
+## 🔬 3. แบบจำลองที่ใช้ การสกัดคุณลักษณะ ผลการประเมิน และข้อจำกัด
+
+### 3.1 การสกัดคุณลักษณะ (Feature Extraction: 3,176 มิติ)
+แบบจำลองทำการสกัดฟีเจอร์แบบผสมผสาน 3 ระดับ:
+1. **Spatial Flatten Array (3,072 มิติ):** ย่อภาพเป็น $32 \times 32$ พิกเซล และแปลงเป็นเวกเตอร์ 1D แบบ Normalized $[0, 1]$ เพื่อจับโครงสร้างรูปทรง ทรงกลม/รี และพื้นผิว
+2. **RGB Color Histogram (48 มิติ):** สกัดฮิสโตแกรมความถี่ของสีแดง เขียว และน้ำเงิน ช่องละ 16 bins ($16 \times 3 = 48$ มิติ)
+3. **HSV Color Distribution (56 มิติ):** สกัดฮิสโตแกรมของ Hue (24 bins), Saturation (16 bins), และ Value (16 bins) รวม 56 มิติ เพื่อจับเนื้อสีและความสดของสีที่ไม่ขึ้นกับความสว่าง
+
+### 3.2 แบบจำลองที่ใช้ (Model Architecture)
+* **อัลกอริทึม:** Multi-Class Logistic Regression (One-vs-Rest Linear Classifier, $C=1.0$) พร้อม `StandardScaler` ใน Pipeline
+* **เหตุผลที่เลือกใช้:**
+  * สำหรับข้อมูลมิติสูง (3,176 ฟีเจอร์) Linear Classifier สามารถสร้างเส้นแบ่ง Hyperplane ได้แม่นยำสูง
+  * ใช้เวลาเทรนรวดเร็วมาก (ประมาณ 15 วินาที)
+  * ขนาดไฟล์โมเดลเล็กมากเพียง **3.45 MB** (เทียบกับ Deep Learning ที่มีขนาด 100-500 MB)
+  * ประหยัด RAM มาก เหมาะสำหรับการรันบน Render Free Tier (RAM 512 MB)
+
+### 3.3 ผลการประเมินหลักบนชุดทดสอบ (Evaluation Results)
+* **Accuracy บน Test Set (1,500 รูป):** **89.80%** (เทียบกับค่าสุ่มเดาที่ $\frac{1}{300} = 0.33\%$)
+* **Macro Average:** Precision = **0.90**, Recall = **0.90**, F1-Score = **0.90**
+* **Weighted Average:** Precision = **0.90**, Recall = **0.90**, F1-Score = **0.90**
+* **คลาสที่จำแนกได้สมบูรณ์แบบ (F1-score 1.00):** แอปเปิ้ลทุกสายพันธุ์, ส้ม, กล้วย, แตงโม, สตรอว์เบอร์รี, ทุเรียน, มังคุด, มะพร้าว, อะโวคาโด, กระท้อน, น้อยหน่า ฯลฯ
+
+### 3.4 ข้อจำกัดของแบบจำลอง (Model Limitations)
+1. **ผลกระทบจากฉากหลังธรรมชาติ (Background Interference):** ภาพถ่ายที่มีใบไม้ กิ่งไม้ หรือพื้นหลังสีเขียว/น้ำตาลปริมาณมาก อาจรบกวนค่าฮิสโตแกรมสี ทำให้สับสนกับผลไม้เปลือกเขียวชนิดอื่น เช่น มะกอกฝรั่ง (Ambarella) หรือ มะตูม (Bael)
+2. **ผลไม้ที่มีลักษณะภายนอกใกล้เคียงกันมาก:** ผลไม้ที่มีเปลือกสีน้ำตาลอมเหลืองและผิวขรุขระ เช่น ละมุด (Sapodilla) อาจสับสนกับ ลองกอง/ลางสาด (Langsat) ในบางมุมมอง
+
+---
+
+## 🛠️ 4. ขั้นตอนการติดตั้งและคำสั่งรันระบบบนเครื่อง (Local Setup)
+
+### 4.1 ความต้องการของระบบ (Prerequisites)
+* Python 3.10 ขึ้นไป (แนะนำ Python 3.12)
+* พื้นที่ว่างบนดิสก์ประมาณ 100 MB (ไม่รวมไฟล์ archive zip)
+
+### 4.2 การติดตั้งแพ็กเกจ (Install Dependencies)
+เปิด Terminal หรือ PowerShell แล้วรันคำสั่ง:
 
 ```bash
+git clone https://github.com/TibParW/Fruits-classification.git
+cd Fruits-classification
 pip install -r requirements.txt
 ```
 
-*(หรือหากมีหลายเวอร์ชันในเครื่อง สามารถใช้ `py -3.12 -m pip install -r requirements.txt`)*
-
----
-
-## 🚀 ขั้นตอนการใช้งาน (Workflow)
-
-### ขั้นตอนที่ 1: เตรียมชุดข้อมูล (Download Dataset)
-สามารถสั่งดาวน์โหลดภาพผลไม้จากอินเทอร์เน็ตเข้าโฟลเดอร์คลาสโดยอัตโนมัติ พร้อมตรวจสอบและตัดภาพเสียออก:
-
-```bash
-python download_images.py --limit 50
-```
-- ค่าเริ่มต้นจะดาวน์โหลดคลาสละ 50 รูป จัดเก็บลงใน `dataset/apple`, `dataset/banana`, `dataset/orange`
-
----
-
-### ขั้นตอนที่ 2: เทรนโมเดล (Train Model)
-รันสคริปต์เทรนโมเดล ซึ่งจะทำการย่อภาพ สกัดฟีเจอร์ และสร้างโมเดล Machine Learning:
-
-```bash
-# เทรนด้วยโมเดล SVM แบบฟีเจอร์ผสมผสาน (Flatten + Color Histogram) แนะนำที่สุด
-python train.py --feature combined --model svm
-```
-
-**ตัวเลือกเสริม (Arguments):**
-- `--feature`:
-  - `combined`: รวมทั้งเวกเตอร์พิกเซลและฮิสโตแกรมสี (ความแม่นยำสูงสุด > 90%)
-  - `flatten`: แปลงพิกเซล $64 \times 64 \times 3$ เป็น 1D Array (ตรงตามแล็บพื้นฐาน)
-  - `histogram`: สกัดเฉพาะค่าการกระจายตัวของแม่สี RGB
-- `--model`:
-  - `svm`: Support Vector Machine ด้วย RBF Kernel (ค่าเริ่มต้น)
-  - `rf`: Random Forest Classifier
-
-เมื่อรันเสร็จ โปรแกรมจะแสดงค่า **Accuracy**, **Classification Report** และเซฟไฟล์ `confusion_matrix.png` และ `fruit_model.pkl`
-
----
-
-### ขั้นตอนที่ 3: เปิดหน้าเว็บทดสอบ (Run Gradio App)
-รันเว็บแอปพลิเคชันเพื่อให้ผู้ใช้ทดสอบอัปโหลดรูปภาพ:
-
+### 4.3 คำสั่งรันเว็บแอปพลิเคชัน (Run Web App)
 ```bash
 python app.py
 ```
-- ระบบจะเปิดเบราว์เซอร์ให้อัตโนมัติที่ `http://127.0.0.1:7860`
-- สามารถลากรูปผลไม้มาวาง หรือกดถ่ายภาพจากกล้องเว็บแคม
-- มีปุ่มตัวอย่างภาพด้านล่างให้คลิกทดสอบได้ทันทีใน 1 วินาที
-- ระบบจะแสดงชื่อผลไม้ภาษาไทย-อังกฤษ พร้อมแถบเปอร์เซ็นต์ความมั่นใจ (Confidence Score)
-- มีแท็บ **"ประสิทธิภาพโมเดล (Model Evaluation)"** แสดง Confusion Matrix และตารางคะแนน
+- ระบบจะเปิดเว็บเบราว์เซอร์ให้อัตโนมัติที่ `http://127.0.0.1:7860`
+- สามารถทดลองอัปโหลดรูปภาพผลไม้ หรือคลิกเลือกตัวอย่างในหน้าเว็บเพื่อทดสอบการจำแนกได้ทันที
+
+### 4.4 คำสั่งเทรนโมเดลใหม่ (Retrain Model - Optional)
+```bash
+python train.py --model linear
+```
+- สคริปต์จะอ่านข้อมูลจากโฟลเดอร์ `dataset/` สกัดฟีเจอร์ เทรนโมเดล บันทึกรายงาน `classification_report.txt`, ภาพ `confusion_matrix.png`, และไฟล์โมเดล `fruit_model.pkl`
 
 ---
 
-## 🧠 สรุปแนวคิดทางเทคนิค (สำหรับส่งและตอบคำถามอาจารย์)
+## 📱 5. วิธีใช้งานและตัวอย่างข้อมูลนำเข้า (User Guide & Sample Inputs)
 
-1. **การแปลงขนาดรูปภาพ (Image Resizing $64 \times 64$):**
-   - รูปภาพผลไม้ที่ดาวน์โหลดมามีขนาดกว้างคูณยาวไม่เท่ากัน โมเดล Machine Learning แบบคลาสสิกต้องการ Input Vector ขนาดคงที่ จึงจำเป็นต้อง Resize ภาพทั้งหมดให้เป็นขนาดเดียวกัน (เช่น $64 \times 64$ พิกเซล)
-2. **Flattening Array:**
-   - คล้ายกับแล็บตัวเลข `digits` ภาพ $64 \times 64 \times 3$ ช่องสี จะถูกคลี่ออกเป็นเวกเตอร์ขนาดยาว $64 \times 64 \times 3 = 12,288$ มิติ และ Normalize ค่าพิกเซล $[0, 255] \rightarrow [0.0, 1.0]$
-3. **Color Histogram:**
-   - ผลไม้แต่ละชนิดมีเอกลักษณ์ด้านสีที่เด่นชัดมาก (ส้ม = สีส้ม, กล้วย = สีเหลือง, แอปเปิ้ล = สีแดง/เขียว) การทำ Color Histogram ช่วยให้โมเดลจับคู่สีได้แม่นยำแม้ผลไม้จะหมุนอยู่คนละมุม
-4. **Support Vector Machine (SVM):**
-   - ทำงานโดยการค้นหา Hyperplane ที่แบ่งแยกกลุ่มข้อมูลออกจากกันให้มี Margin กว้างที่สุด
-   - การใช้ **RBF Kernel** ช่วยให้โมเดลสามารถแบ่งข้อมูลที่มีความซับซ้อนและไม่เป็นเชิงเส้น (Non-linear boundary) ในภาพผลไม้ได้เป็นอย่างดี
-5. **การวัดผล (Evaluation):**
-   - ประเมินผลด้วยข้อมูล Test Set ที่แยกไว้ 20% ที่โมเดลไม่เคยเห็นมาก่อน
-   - ดูค่า Accuracy, Precision, Recall, F1-Score และตรวจสอบผ่าน Confusion Matrix
+### 5.1 ขั้นตอนการใช้งานบนเว็บแอป:
+1. เข้าสู่หน้าเว็บแอปพลิเคชัน [https://fruits-classification-j3ss.onrender.com](https://fruits-classification-j3ss.onrender.com)
+2. **อัปโหลดภาพผลไม้:** สามารถลากไฟล์ภาพมาวาง (Drag & Drop), คลิกเพื่อเลือกไฟล์, ถ่ายภาพจากกล้องเว็บแคม หรือวางภาพจากคลิปบอร์ด
+3. **หรือเลือกภาพตัวอย่าง:** คลิกเลือกภาพผลไม้ตัวอย่างในแถบ **"📁 ภาพตัวอย่างสำหรับทดสอบ (Sample Images)"** ด้านล่าง (เช่น ทุเรียน, มังคุด, เงาะ, ขนุน, ลำไย, กระท้อน, น้อยหน่า, แก้วมังกร, มะม่วง, มะพร้าว, กล้วย, แอปเปิ้ล)
+4. **ดูผลลัพธ์ทันที (Auto-Predict):** ระบบจะคำนวณและแสดงชื่อผลไม้ภาษาไทย ภาษาอังกฤษ พร้อม Emoji และแถบระดับความมั่นใจ Top-5 ในเสี้ยววินาที
 
 ---
 
-## 📌 บันทึกประวัติเวอร์ชัน (Version History & Changelog)
+## 📂 6. คำอธิบายไฟล์และโฟลเดอร์สำคัญในโครงการ (Project Structure)
 
-### **v1.0.6 (2026-09-24) - Mega Expansion to 21 Fruit Classes (1,260 Images, 100.00% Accuracy)**
-- 👑 **Massive Dataset Expansion (21 Classes & Thai Fruits Edition):**
-  - เพิ่มชุดข้อมูลผลไม้ขึ้นเป็น **21 ชนิดผลไม้** รวมทั้งสิ้น **1,260 รูปภาพ** (คลาสละ 60 ภาพ)
-  - ครอบคลุมผลไม้ไทยยอดนิยมและเอกลักษณ์สูง: **ทุเรียน 👑, มังคุด 👑, เงาะ 🔴, แก้วมังกร 🐲, มะละกอ 🍈, มะพร้าว 🥥, ฝรั่ง 🍐, ลิ้นจี่ 🍒, สละ 🌰**
-  - พร้อมผลไม้ยอดนิยมระดับโลก: **อะโวคาโด 🥑, กีวี 🥝, ทับทิม 🍎, แอปเปิ้ล, กล้วย, ส้ม, เลมอน, สตรอว์เบอร์รี, แตงโม, องุ่น, สับปะรด, มะม่วง**
-- 🎯 **Flawless 100% Evaluation Performance:**
-  - สกัดฟีเจอร์ระดับสูงแบบ `combined` (Spatial Pixels + RGB Histograms + HSV Color Distribution) รวม 12,392 มิติ
-  - ประเมินผลบน Test Set (252 รูปภาพที่โมเดลไม่เคยเห็น): **Accuracy สูงสุดระดับ 100.00%** (Precision & Recall 1.00 ครบทุก 21 คลาส)
-- 🎨 **Enhanced Minimalist UI:**
-  - อัปเดตแถบแสดงความมั่นใจแสดง Top-5 Predictions
-  - อัปเดต Empty State และ Header ให้สวยงาม ทันสมัย รองรับทั้ง 21 ผลไม้
-
-### **v1.0.5 (2026-09-24) - Kaggle Fruits-360 Dataset Integration (9 Classes, 540 Images, 98.15% Accuracy)**
-- 🏆 **Kaggle Fruits-360 Dataset:**
-  - นำเข้าชุดข้อมูลมาตรฐานระดับโลก **Fruits-360 (Kaggle)** โดยตรง
-  - สคริปต์ `download_fruits360.py` รองรับ Multi-threaded high-speed download
-  - ขยายเป็น **9 ชนิดผลไม้** รวม **540 รูปภาพ** (คลาสละ 60 รูป): Apple, Banana, Orange, Grape, Watermelon, Lemon, Strawberry, Pineapple, Mango
-- 🎯 **Exceptional Performance:**
-  - สกัดฟีเจอร์แบบ `combined` (Spatial Pixels + RGB Histograms + HSV Color Distribution)
-  - โมเดล **SVM (RBF Kernel)** ทำสถิติความแม่นยำบน Test Set (108 รูป) สูงถึง **98.15%** (Precision & Recall 1.00 ในเกือบทุกคลาส)
-- 🎨 **Minimal UI Polish:**
-  - รองรับการแสดงผลทั้ง 9 ชนิดผลไม้ พร้อมไอคอนและสีสันสไตล์โมเดิร์น
-
-### **v1.0.4 (2026-09-24) - Expanded to 8 Fruit Classes (365 Images)**
-- 🍎🍌🍊🍇🍉🍋🍓🥭 **Dataset Expansion:**
-  - ดาวน์โหลดชุดข้อมูลภาพถ่ายผลไม้จริงเพิ่มจากอินเทอร์เน็ตอีก 5 ชนิด (องุ่น, แตงโม, เลมอน, สตรอว์เบอร์รี, มะม่วง)
-  - ขยายขนาด Dataset รวมเป็น **365 รูปภาพ ครอบคลุม 8 ชนิดผลไม้**
-- 🔬 **Enhanced Feature Extraction:**
-  - ยกระดับการสกัดฟีเจอร์ด้วย **HSV Color Histogram** (Hue, Saturation, Value) ผสานกับ RGB Histogram และ Spatial Pixels เพื่อให้แยกแยะความสดและเฉดสีของผลไม้ได้ละเอียดยิ่งขึ้น
-  - เทรนโมเดลใหม่รองรับการจำแนกผลไม้ทั้ง 8 คลาส
-
-### **v1.0.3 (2026-09-24) - Clean Minimalist UI Cleanup**
-- 🧹 **UI Cleanup:**
-  - ลบส่วนภาพตัวอย่าง (Examples) และแถบข้อความตัวอย่างด้านล่างออกตามความต้องการของผู้ใช้
-  - ลบแถบ Footer ท้ายเว็บออกเพื่อความมินิมอล เรียบง่าย และสบายตาสูงสุด
-
-### **v1.0.2 (2026-09-24) - Minimalist UI Redesign**
-- 🎨 **Minimalist Design & UX:**
-  - ปรับดีไซน์ใหม่สไตล์ Minimalist สะอาดตา จัดกึ่งกลางหน้าจอ (Max-width 900px) ไม่ยืดกว้างเกินไปบนจอใหญ่
-  - เปลี่ยนจากการแสดงภาพย่อเปล่าๆ เป็น **Empty State Card** สวยงาม
-  - เพิ่มระบบ **Auto-Predict** วิเคราะห์ผลทันทีที่อัปโหลดรูปภาพหรือคลิกเลือกตัวอย่าง ไม่จำเป็นต้องกดปุ่ม
-  - ซ่อนภาพ 64x64 px ทางเทคนิคไว้ใน Accordion เพื่อความสบายตา
-  - ปรับแต่งปุ่มและฟอนต์ให้อ่านง่าย มีระดับ และเป็นระเบียบ
-
-### **v1.0.1 (2026-09-24) - Vercel & ASGI Support**
-- 🛠️ **Deployment Compatibility:**
-  - Export top-level ASGI `app` ผ่าน `gr.mount_gradio_app(FastAPI(), demo, path="/")` เพื่อแก้ปัญหา Vercel Serverless Function error: *"Found app.py but it does not export a top-level 'app'"*
-  - เพิ่มไฟล์คอนฟิก `vercel.json` สำหรับการทำ Route Rewrites
-  - เพิ่ม `fastapi` และ `uvicorn` ลงใน `requirements.txt`
-  - อัปเดต metadata ของระบบและ UI เป็นเวอร์ชัน `v1.0.1`
-
-### **v1.0.0 (2026-09-24) - Initial Release**
-- 🎉 เปิดตัวโครงงาน Fruit Classifier เวอร์ชันแรกอย่างเป็นทางการ
-- 📥 **Data Pipeline:**
-  - สคริปต์ `download_images.py` ดาวน์โหลดรูปภาพผลไม้อัตโนมัติจาก Bing Search
-  - ระบบตรวจสอบความถูกต้องของไฟล์ภาพ (Corrupted Image Validation)
-  - ดาวน์โหลดข้อมูลตัวอย่าง 165 รูป (Apple: 55, Banana: 55, Orange: 55)
-- 🔬 **Feature Extraction & Modeling:**
-  - รองรับการสกัดฟีเจอร์ 3 โหมด: `flatten` (เวกเตอร์พิกเซลย่อขนาด 64x64), `histogram` (การกระจายตัวของสี RGB), และ `combined` (รวมทั้งสองฟีเจอร์)
-  - พัฒนาโมเดล **SVM (RBF Kernel)** พร้อม Probability Calibration สำหรับส่งเปอร์เซ็นต์ความมั่นใจ
-  - พัฒนาโมเดลทางเลือก **Random Forest Classifier** เพื่อการเปรียบเทียบ
-  - ผลประเมินโมเดล: Accuracy บน Test Set สูงถึง **87.88%** (SVM) และ **90.91%** (Random Forest)
-- 🌐 **Web Interface (Gradio):**
-  - หน้าเว็บ Interactive รองรับการ Drag & Drop ไฟล์ภาพ, ป้อนภาพผ่านเว็บแคม และคลิกเลือกภาพตัวอย่าง
-  - แสดงผลลัพธ์เป็นชื่อผลไม้พร้อม Emoji และกราฟแสดงเปอร์เซ็นต์ความมั่นใจ (Confidence Breakdown)
-  - แท็บรายงานประสิทธิภาพโมเดล แสดงภาพ Confusion Matrix และตาราง Classification Report ในตัว
-
+```text
+Fruits-classification/
+├── dataset/                     # โฟลเดอร์ชุดข้อมูล 300 คลาสผลไม้ (คลาสละ 25 รูป รวม 7,500 รูป)
+├── sample_images/               # ภาพผลไม้ตัวอย่าง 12 ชนิด สำหรับคลิกทดสอบบนหน้าเว็บ
+│   ├── durian.jpg               # ตัวอย่างภาพทุเรียน 👑
+│   ├── mangosteen.jpg          # ตัวอย่างภาพมังคุด 👑
+│   ├── rambutan.jpg            # ตัวอย่างภาพเงาะ 🔴
+│   ├── jackfruit.jpg           # ตัวอย่างภาพขนุน 🍈
+│   ├── longan.jpg              # ตัวอย่างภาพลำไย 🌰
+│   ├── santol.jpg              # ตัวอย่างภาพกระท้อน 🟡
+│   ├── custard_apple.jpg       # ตัวอย่างภาพน้อยหน่า 🍈
+│   ├── dragonfruit.jpg         # ตัวอย่างภาพแก้วมังกร 🐲
+│   ├── mango.jpg               # ตัวอย่างภาพมะม่วง 🥭
+│   ├── coconut.jpg             # ตัวอย่างภาพมะพร้าว 🥥
+│   ├── banana.jpg              # ตัวอย่างภาพกล้วย 🍌
+│   └── apple.jpg               # ตัวอย่างภาพแอปเปิ้ล 🍎
+├── fruit_classification.ipynb  # Jupyter Notebook ส่งงาน แสดงกระบวนการเทรนและวิเคราะห์ครบ 8 ขั้นตอน
+├── app.py                       # ซอร์สโค้ดเว็บแอปพลิเคชัน Gradio สไตล์ Minimalist พร้อม Auto-Predict
+├── train.py                     # สคริปต์สกัดฟีเจอร์ เทรน และประเมินผลโมเดล 300 คลาส
+├── version.py                   # ระบุเวอร์ชัน (v1.0.9) และ Metadata ของโครงการ
+├── fruit_model.pkl              # ไฟล์โมเดลที่บันทึกไว้จริง (Linear Classifier 300 คลาส ขนาด 3.45 MB)
+├── confusion_matrix.png         # ภาพ Confusion Matrix Heatmap ขนาด 300x300 คลาส
+├── classification_report.txt    # รายงานผล Precision, Recall, F1-score รายคลาส
+├── requirements.txt             # รายการไลบรารีที่จำเป็น (Scikit-Learn, Gradio, Pillow, NumPy, ฯลฯ)
+├── vercel.json                  # คอนฟิกเส้นทางสำหรับ Cloud Deployment
+└── README.md                    # เอกสารอธิบายโครงการฉบับสมบูรณ์
+```
