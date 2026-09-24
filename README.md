@@ -1,11 +1,11 @@
 # 🍎🍌🍊 Fruit Classifier (ระบบจำแนกชนิดผลไม้ด้วย Machine Learning)
 
-![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
 
-ระบบจำแนกชนิดผลไม้พัฒนาด้วย **Python**, **Scikit-Learn (SVM / Random Forest)** และ **Gradio** โดยต่อยอดแนวคิดจากโปรเจกต์ `digit_svm_app` เปลี่ยนจากการรู้จำลายมือตัวเลขมาเป็นการจำแนกภาพผลไม้จริง (แอปเปิ้ล, กล้วย, ส้ม)
+ระบบจำแนกชนิดผลไม้พัฒนาด้วย **Python**, **Scikit-Learn (SVM / Random Forest)** และ **Gradio** โดยต่อยอดแนวคิดจากโปรเจกต์ `digit_svm_app` รองรับผลไม้มากถึง 8 ชนิด (แอปเปิ้ล, กล้วย, ส้ม, องุ่น, แตงโม, เลมอน, สตรอว์เบอร์รี, มะม่วง)
 
 ---
 
@@ -13,10 +13,15 @@
 
 ```text
 Fruit Classifier/
-├── dataset/                    # โฟลเดอร์เก็บภาพแบ่งตามคลาส (55 รูป/คลาส)
-│   ├── apple/                  # ภาพแอปเปิ้ล
-│   ├── banana/                 # ภาพกล้วย
-│   └── orange/                 # ภาพส้ม
+├── dataset/                    # โฟลเดอร์เก็บภาพแบ่งตามคลาส (365 รูป รวม 8 ชนิด)
+│   ├── apple/                  # ภาพแอปเปิ้ล (55 รูป)
+│   ├── banana/                 # ภาพกล้วย (55 รูป)
+│   ├── orange/                 # ภาพส้ม (55 รูป)
+│   ├── grape/                  # ภาพองุ่น (40 รูป)
+│   ├── watermelon/             # ภาพแตงโม (40 รูป)
+│   ├── lemon/                  # ภาพเลมอน (40 รูป)
+│   ├── strawberry/             # ภาพสตรอว์เบอร์รี (40 รูป)
+│   └── mango/                  # ภาพมะม่วง (40 รูป)
 ├── download_images.py          # สคริปต์ดาวน์โหลดภาพจากอินเทอร์เน็ตอัตโนมัติ
 ├── train.py                    # สคริปต์สกัดฟีเจอร์ เทรน และประเมินผลโมเดล
 ├── app.py                      # หน้าเว็บ Interactive UI ด้วย Gradio
@@ -107,6 +112,14 @@ python app.py
 ---
 
 ## 📌 บันทึกประวัติเวอร์ชัน (Version History & Changelog)
+
+### **v1.0.4 (2026-09-24) - Expanded to 8 Fruit Classes (365 Images)**
+- 🍎🍌🍊🍇🍉🍋🍓🥭 **Dataset Expansion:**
+  - ดาวน์โหลดชุดข้อมูลภาพถ่ายผลไม้จริงเพิ่มจากอินเทอร์เน็ตอีก 5 ชนิด (องุ่น, แตงโม, เลมอน, สตรอว์เบอร์รี, มะม่วง)
+  - ขยายขนาด Dataset รวมเป็น **365 รูปภาพ ครอบคลุม 8 ชนิดผลไม้**
+- 🔬 **Enhanced Feature Extraction:**
+  - ยกระดับการสกัดฟีเจอร์ด้วย **HSV Color Histogram** (Hue, Saturation, Value) ผสานกับ RGB Histogram และ Spatial Pixels เพื่อให้แยกแยะความสดและเฉดสีของผลไม้ได้ละเอียดยิ่งขึ้น
+  - เทรนโมเดลใหม่รองรับการจำแนกผลไม้ทั้ง 8 คลาส
 
 ### **v1.0.3 (2026-09-24) - Clean Minimalist UI Cleanup**
 - 🧹 **UI Cleanup:**

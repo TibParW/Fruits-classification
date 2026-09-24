@@ -36,7 +36,11 @@ THAI_LABELS = {
     "apple": "แอปเปิ้ล (Apple 🍎)",
     "banana": "กล้วย (Banana 🍌)",
     "orange": "ส้ม (Orange 🍊)",
-    "lemon": "มะนาว/เลมอน (Lemon 🍋)",
+    "lemon": "เลมอน/มะนาว (Lemon 🍋)",
+    "strawberry": "สตรอว์เบอร์รี (Strawberry 🍓)",
+    "watermelon": "แตงโม (Watermelon 🍉)",
+    "grape": "องุ่น (Grape 🍇)",
+    "mango": "มะม่วง (Mango 🥭)",
 }
 
 
@@ -44,8 +48,8 @@ def extract_features(image: Image.Image, mode="combined", img_size=(64, 64)):
     """
     สกัด Feature จากรูปภาพ
     - mode='flatten': ย่อภาพเป็น 64x64 แล้วแปลงเป็น 1D Array (Normalized [0, 1])
-    - mode='histogram': คำนวณ Color Histogram ของแม่สี R, G, B ช่องละ 32 bins
-    - mode='combined': รวมทั้ง Flatten Array และ Color Histogram เข้าด้วยกัน
+    - mode='histogram': คำนวณ Color Histogram ทั้ง RGB และ HSV
+    - mode='combined': รวมทั้งเวกเตอร์พิกเซล, RGB Histogram และ HSV Color Distribution
     """
     # ตรวจสอบและแปลงเป็น RGB
     if image.mode != "RGB":
@@ -58,19 +62,26 @@ def extract_features(image: Image.Image, mode="combined", img_size=(64, 64)):
     # 1. Flatten Features
     flatten_feat = (img_array / 255.0).flatten()
 
-    # 2. Color Histogram Features (R, G, B แต่ละช่อง 32 bins)
-    hist_r, _ = np.histogram(img_array[:, :, 0], bins=32, range=(0, 256), density=True)
-    hist_g, _ = np.histogram(img_array[:, :, 1], bins=32, range=(0, 256), density=True)
-    hist_b, _ = np.histogram(img_array[:, :, 2], bins=32, range=(0, 256), density=True)
-    hist_feat = np.hstack([hist_r, hist_g, hist_b])
+    # 2. RGB Color Histogram (ช่องละ 16 bins)
+    hist_r, _ = np.histogram(img_array[:, :, 0], bins=16, range=(0, 256), density=True)
+    hist_g, _ = np.histogram(img_array[:, :, 1], bins=16, range=(0, 256), density=True)
+    hist_b, _ = np.histogram(img_array[:, :, 2], bins=16, range=(0, 256), density=True)
+    rgb_feat = np.hstack([hist_r, hist_g, hist_b])
+
+    # 3. HSV Color Histogram (Hue 24 bins, Saturation 16 bins, Value 16 bins)
+    hsv_img = image.convert("HSV")
+    hsv_array = np.array(hsv_img, dtype=np.float32)
+    hist_h, _ = np.histogram(hsv_array[:, :, 0], bins=24, range=(0, 256), density=True)
+    hist_s, _ = np.histogram(hsv_array[:, :, 1], bins=16, range=(0, 256), density=True)
+    hist_v, _ = np.histogram(hsv_array[:, :, 2], bins=16, range=(0, 256), density=True)
+    hsv_feat = np.hstack([hist_h, hist_s, hist_v])
 
     if mode == "flatten":
         return flatten_feat
     elif mode == "histogram":
-        return hist_feat
+        return np.hstack([rgb_feat, hsv_feat])
     elif mode == "combined":
-        # รวมทั้งเวกเตอร์พิกเซลและฮิสโตแกรมสี
-        return np.hstack([flatten_feat, hist_feat])
+        return np.hstack([flatten_feat, rgb_feat, hsv_feat])
     else:
         raise ValueError(f"Unknown feature mode: {mode}")
 

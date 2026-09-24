@@ -18,11 +18,16 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-# การจับคู่ระหว่างโฟลเดอร์ปลายทาง และคำค้นหาเพื่อให้ได้ภาพผลไม้ที่ชัดเจนที่สุด
+# การจับคู่ระหว่างโฟลเดอร์ปลายทาง และคำค้นหาเพื่อให้ได้ภาพผลไม้ที่ชัดเจนที่สุด (8 ชนิด)
 DEFAULT_TARGETS = {
     "apple": "fresh red apple fruit",
     "banana": "ripe yellow banana fruit",
     "orange": "fresh orange fruit",
+    "lemon": "fresh yellow lemon fruit",
+    "strawberry": "fresh red strawberry fruit",
+    "watermelon": "fresh watermelon fruit slice",
+    "grape": "fresh purple grape fruit bunch",
+    "mango": "fresh ripe yellow mango fruit",
 }
 
 
@@ -37,7 +42,6 @@ def clean_corrupted_images(folder_path: Path):
         try:
             with Image.open(file_path) as img:
                 img.verify()  # ตรวจสอบความเสียหายของไฟล์
-            # เปิดใหม่อีกครั้งเพื่อทดสอบการแปลงเป็น RGB
             with Image.open(file_path) as img:
                 img.convert("RGB")
             valid_count += 1
@@ -58,7 +62,7 @@ def download_fruits(output_dir="dataset", limit=50):
     temp_dir = output_path / "_temp_bing"
 
     print("=" * 60)
-    print(" กำลังเริ่มดาวน์โหลด Dataset ผลไม้")
+    print(" กำลังเริ่มดาวน์โหลด Dataset ผลไม้หลากหลายชนิด")
     print(f" จำนวนเป้าหมายต่อคลาส: {limit} รูป")
     print(f" บันทึกไว้ที่โฟลเดอร์: {output_path.resolve()}")
     print("=" * 60)
@@ -67,12 +71,18 @@ def download_fruits(output_dir="dataset", limit=50):
         class_folder = output_path / class_name
         class_folder.mkdir(parents=True, exist_ok=True)
 
-        print(f"\n>>> ดาวน์โหลด {class_name.upper()} (ค้นหา: '{search_query}')")
+        existing_valid = clean_corrupted_images(class_folder)
+        if existing_valid >= limit:
+            print(f"[{class_name}] มีภาพสมบูรณ์ครบ {existing_valid} รูปแล้ว (ข้ามการดาวน์โหลด)")
+            continue
+
+        needed = limit - existing_valid
+        print(f"\n>>> ดาวน์โหลด {class_name.upper()} เพิ่มอีก {needed} รูป (ค้นหา: '{search_query}')")
         
         # ดาวน์โหลดลงโฟลเดอร์ชั่วคราว
         downloader.download(
             search_query,
-            limit=limit,
+            limit=needed,
             output_dir=str(temp_dir),
             adult_filter_off=True,
             force_replace=False,

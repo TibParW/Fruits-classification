@@ -37,9 +37,9 @@ if MODEL_FILE.exists():
 
 EMPTY_STATE_HTML = """
 <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 36px 16px; text-align: center; color: #64748b;">
-    <div style="font-size: 2.2rem; margin-bottom: 6px; opacity: 0.8;">🍎🍌🍊</div>
-    <div style="font-size: 0.95rem; font-weight: 600; color: #334155;">พร้อมวิเคราะห์ภาพ</div>
-    <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">อัปโหลดรูปภาพทางซ้าย หรือคลิกรูปตัวอย่างด้านล่าง</div>
+    <div style="font-size: 2.2rem; margin-bottom: 6px; opacity: 0.85;">🍎🍌🍊🍇🍉🍋🍓🥭</div>
+    <div style="font-size: 0.95rem; font-weight: 600; color: #334155;">พร้อมวิเคราะห์ภาพผลไม้ 8 ชนิด</div>
+    <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">อัปโหลดรูปภาพทางซ้ายเพื่อเริ่มการวิเคราะห์</div>
 </div>
 """
 
@@ -178,7 +178,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             ระบบจำแนกชนิดผลไม้
         </h1>
         <p style="color: #64748b; font-size: 0.92rem; margin: 0; font-weight: 400;">
-            ส้ม • กล้วย • แอปเปิ้ล ด้วย Machine Learning (SVM & Color Features)
+            แอปเปิ้ล • กล้วย • ส้ม • องุ่น • แตงโม • เลมอน • สตรอว์เบอร์รี • มะม่วง (8 ชนิด)
         </p>
     </div>
     """)
@@ -199,7 +199,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                     output_summary = gr.HTML(value=EMPTY_STATE_HTML)
                     output_label = gr.Label(
                         label="ระดับความมั่นใจ (Confidence Breakdown)",
-                        num_top_classes=3
+                        num_top_classes=4
                     )
                     with gr.Accordion("🔍 ภาพที่โมเดลประมวลผล (64×64 px)", open=False):
                         output_thumb = gr.Image(
