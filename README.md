@@ -1,6 +1,6 @@
 # 🍎🍌🍊 Fruit Classifier (ระบบจำแนกชนิดผลไม้ด้วย Machine Learning)
 
-![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
@@ -107,6 +107,14 @@ python app.py
 ---
 
 ## 📌 บันทึกประวัติเวอร์ชัน (Version History & Changelog)
+
+### **v1.0.2 (2026-09-24) - Minimalist UI Redesign**
+- 🎨 **Minimalist Design & UX:**
+  - ปรับดีไซน์ใหม่สไตล์ Minimalist สะอาดตา จัดกึ่งกลางหน้าจอ (Max-width 900px) ไม่ยืดกว้างเกินไปบนจอใหญ่
+  - เปลี่ยนจากการแสดงภาพย่อเปล่าๆ เป็น **Empty State Card** สวยงาม
+  - เพิ่มระบบ **Auto-Predict** วิเคราะห์ผลทันทีที่อัปโหลดรูปภาพหรือคลิกเลือกตัวอย่าง ไม่จำเป็นต้องกดปุ่ม
+  - ซ่อนภาพ 64x64 px ทางเทคนิคไว้ใน Accordion เพื่อความสบายตา
+  - ปรับแต่งปุ่มและฟอนต์ให้อ่านง่าย มีระดับ และเป็นระเบียบ
 
 ### **v1.0.1 (2026-09-24) - Vercel & ASGI Support**
 - 🛠️ **Deployment Compatibility:**
