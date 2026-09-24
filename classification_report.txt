@@ -1,40 +1,37 @@
-Model: HistGradientBoosting (30 Real Fruit Classes - Fruit-262)
-Total Samples: 4570 (Train: 3656, Test: 914)
-Accuracy: 51.75%
+Model: MobileNetV2 Deep Logistic Classifier
+Classes: 26
+Feature Mode: deep
+Accuracy: 82.55%
 
                precision    recall  f1-score   support
 
-        apple       0.50      0.42      0.46        31
-      avocado       0.29      0.33      0.31        30
-       banana       0.59      0.65      0.62        31
-    blueberry       0.57      0.67      0.62        30
-   cantaloupe       0.52      0.43      0.47        30
-    carambola       0.50      0.37      0.42        30
-       cherry       0.91      0.70      0.79        30
-      coconut       0.50      0.39      0.44        31
-custard apple       0.50      0.23      0.32        30
-  dragonfruit       0.64      0.58      0.61        31
-       durian       0.38      0.48      0.43        31
-        grape       0.42      0.37      0.39        30
-        guava       0.76      0.53      0.63        30
-    jackfruit       0.48      0.48      0.48        31
-         kiwi       0.44      0.60      0.51        30
-        lemon       0.36      0.43      0.39        30
-         lime       0.58      0.37      0.45        30
-       longan       0.38      0.52      0.44        31
-       lychee       0.62      0.53      0.57        30
-        mango       0.42      0.26      0.32        31
-   mangosteen       0.57      0.68      0.62        31
-       orange       0.53      0.70      0.60        30
-       papaya       0.54      0.67      0.60        30
-passion fruit       0.62      0.42      0.50        31
-         pear       0.38      0.50      0.43        30
-    pineapple       0.50      0.68      0.58        31
-  pomegranate       0.40      0.40      0.40        30
-     rambutan       0.67      0.71      0.69        31
-   strawberry       0.63      0.77      0.70        31
-   watermelon       0.65      0.65      0.65        31
+        apple       0.68      0.87      0.76        15
+      avocado       0.86      0.86      0.86        14
+       banana       1.00      0.87      0.93        15
+    carambola       0.87      0.93      0.90        14
+       cherry       0.87      0.93      0.90        14
+      coconut       0.74      0.88      0.80        16
+custard apple       0.94      1.00      0.97        15
+  dragonfruit       0.83      1.00      0.91        15
+       durian       1.00      0.87      0.93        15
+        grape       0.93      0.93      0.93        14
+        guava       0.89      0.57      0.70        14
+    jackfruit       1.00      1.00      1.00        16
+         kiwi       0.59      0.71      0.65        14
+        lemon       0.65      0.79      0.71        14
+         lime       0.73      0.57      0.64        14
+       longan       0.92      0.80      0.86        15
+        mango       0.67      0.53      0.59        15
+   mangosteen       0.79      0.73      0.76        15
+       orange       0.71      0.86      0.77        14
+       papaya       0.71      0.71      0.71        14
+passion fruit       0.88      0.44      0.58        16
+    pineapple       0.93      0.93      0.93        15
+     rambutan       0.93      0.93      0.93        15
+       santol       0.72      0.81      0.76        16
+   strawberry       0.93      0.93      0.93        15
+   watermelon       0.88      1.00      0.94        15
 
-     accuracy                           0.52       914
-    macro avg       0.53      0.52      0.51       914
- weighted avg       0.53      0.52      0.51       914
+     accuracy                           0.83       384
+    macro avg       0.83      0.82      0.82       384
+ weighted avg       0.83      0.83      0.82       384

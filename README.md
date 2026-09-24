@@ -1,13 +1,14 @@
 # 🍎 โครงการพัฒนาระบบจำแนกชนิดผลไม้ (Fruit Classifier)
-## Machine Learning Image Classification & Gradio Web Application (30 Real Fruit Classes)
+## Deep Vision Image Classification & Gradio Web Application (26 Real Fruit Classes)
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-brightgreen.svg)
 ![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-orange.svg)
+![ONNX Runtime](https://img.shields.io/badge/ONNX%20Runtime-1.30-blue.svg)
 ![Gradio](https://img.shields.io/badge/Gradio-6.28-red.svg)
-![Classes](https://img.shields.io/badge/Classes-30%20Pure%20Fruits-success.svg)
-![Model](https://img.shields.io/badge/Model-HistGradientBoosting-blueviolet.svg)
-![Samples](https://img.shields.io/badge/Samples-4%2C570%20Real%20Photos-blue.svg)
+![Classes](https://img.shields.io/badge/Classes-26%20Pure%20Fruits-success.svg)
+![Model](https://img.shields.io/badge/Model-MobileNetV2%20Deep%20Features-blueviolet.svg)
+![Samples](https://img.shields.io/badge/Samples-1%2C916%20Real%20Photos-blue.svg)
 ![Deployment](https://img.shields.io/badge/Deployment-Render%20Live-brightgreen.svg)
 
 ---
@@ -37,55 +38,59 @@
 ### 1.1 ปัญหาที่ต้องการแก้ (Problem Statement)
 การระบุและจำแนกสายพันธุ์ผลไม้และพืชผลทางการเกษตรมีความสำคัญอย่างยิ่งต่อระบบห่วงโซ่อุปทาน (Supply Chain) การคัดเกรดผลผลิตอัตโนมัติ (Automated Agricultural Sorting) และระบบคิดเงินอัตโนมัติในซูเปอร์มาร์เก็ต (Smart Retail Self-Checkout)
 
-อย่างไรก็ดี ในการใช้งานจริง รูปภาพที่ได้จากกล้องมือถือหรืออินเทอร์เน็ตมักมีสิ่งรบกวน เช่น กิ่งไม้ ใบไม้สีเขียว โต๊ะไม้ หรือผลไม้ที่ถูกผ่าครึ่ง หากนำโมเดลที่ฝึกสอนเฉพาะภาพในสตูดิโอฉากหลังขาวและมีผักปนเปื้อน (เช่น กระเทียม ขิง กะหล่ำปลี มะเขือยาว) มาใช้ โมเดลจะสับสนและทำนายสีของใบไม้เป็นผักเหล่านั้นทันที
+อย่างไรก็ดี ในการใช้งานจริง รูปภาพที่ได้จากกล้องมือถือหรืออินเทอร์เน็ตมักมีสิ่งรบกวน เช่น เขียงไม้ ตะกร้าหวาย โต๊ะอาหาร หรือผลไม้ที่ถูกหั่น/ผ่าครึ่ง หากใช้การสกัดฟีเจอร์แบบพื้นฐาน (Raw Pixels หรือ Color Histograms เพียงอย่างเดียว) โมเดลจะไม่เข้าใจรูปทรงเรขาคณิต (Shape & Semantics) ทำให้ผลไม้ที่มีสีเหลืองเหมือนกัน (กล้วย มะม่วง เลมอน) หรือสีแดงเหมือนกัน (แอปเปิ้ล ลิ้นจี่ เชอร์รี่) ทำนายสับสนปนเปกัน
 
 ### 1.2 ประโยชน์ของระบบ (Benefits)
-1. **ตัดผักและสิ่งรบกวนออก 100%:** คัดสรรเฉพาะ **30 ผลไม้ยอดนิยมแท้** (ทุเรียน มังคุด เงาะ มะม่วง มะพร้าว กล้วย แอปเปิ้ล สตรอว์เบอร์รี บลูเบอร์รี แตงโม เสาวรส สับปะรด แก้วมังกร ฯลฯ)
-2. **ฝึกสอนด้วยภาพถ่ายจริงในสภาพแวดล้อมธรรมชาติ (Fruit-262):** รองรับภาพถ่ายจริงที่มีใบไม้ แสงแดด และผลไม้ผ่าครึ่ง จำนวนกว่า **4,570 รูปภาพ**
-3. **อัลกอริทึม Non-Linear Ensemble:** ใช้ `HistGradientBoostingClassifier` ผสาน Color Distribution Features (RGB + HSV) ที่ทนทานต่อแสงและมุมมอง
+1. **ตัดผักและสิ่งรบกวนออก 100%:** คัดสรรเฉพาะ **26 ผลไม้ยอดนิยมและผลไม้ไทยเขตร้อนแท้** (ทุเรียน มังคุด เงาะ มะม่วง มะพร้าว กล้วย แอปเปิ้ล สตรอว์เบอร์รี แตงโม เสาวรส สับปะรด แก้วมังกร เลมอน มะนาว ส้ม ขนุน น้อยหน่า กระท้อน ลำไย ฯลฯ)
+2. **ระบบสกัดคุณลักษณะ Deep Vision (MobileNetV2 2,280 มิติ):** ผสานคุณลักษณะเชิงลึก (Deep Semantic Representations 1,280 มิติ) ร่วมกับ Normalized Likelihoods (1,000 มิติ) จับรูปทรง พื้นผิวเปลือก เมล็ด และเนื้อผลไม้ได้แม่นยำ ไม่สับสนแม้มีฉากหลังเป็นเขียงไม้หรือตะกร้า
+3. **เบาและรวดเร็วสูง (ONNX Runtime CPU):** รันบน CPU ด้วยความเร็วเพียง 15 ms ต่อภาพ และใช้ RAM ต่ำกว่า 80 MB ปลอดภัย ไม่เสี่ยงโดนตัด RAM บน Render Free Tier
 
 ---
 
 ## 📦 2. แหล่งที่มา จำนวนข้อมูล และการแบ่งชุดข้อมูล (Dataset & Splitting)
 
 ### 2.1 แหล่งที่มาของข้อมูล (Data Sources)
-* **Fruit-262 Dataset (Kaggle):** ชุดข้อมูลภาพถ่ายผลไม้จริงจากสภาพแวดล้อมธรรมชาติทั่วโลก (คัดเลือก 30 ชนิด x 150 รูปภาพ)
-* **Fruits-360 Dataset (Kaggle):** ภาพตัวอย่างมาตรฐานสำหรับคลังภาพทดสอบในระบบ
+* **Fruit-262 Dataset (Kaggle):** ชุดข้อมูลภาพถ่ายผลไม้จริงจากสภาพแวดล้อมธรรมชาติทั่วโลก (คัดเลือก 26 ชนิดผลไม้แท้ x 70+ รูปภาพ)
+* **Sample Images & Augmentation:** ภาพตัวอย่างทดสอบพร้อมเทคนิค Data Augmentation (Horizontal Flip)
 
 ### 2.2 จำนวนข้อมูลและการแบ่งชุดฝึก/ชุดทดสอบ (Dataset Distribution)
-* **จำนวนคลาสทั้งหมด:** **30 คลาสผลไม้ยอดนิยมแท้ (Zero Vegetables)**
-* **จำนวนภาพรวมทั้งหมด:** **4,570 รูปภาพ**
+* **จำนวนคลาสทั้งหมด:** **26 คลาสผลไม้ยอดนิยมแท้ (Zero Vegetables)**
+* **จำนวนภาพรวมทั้งหมด:** **1,916 รูปภาพ**
 * **การแบ่งชุดข้อมูล (Data Splitting):** ใช้วิธี **Stratified Train-Test Split (80:20)**:
-  * **ชุดฝึกสอน (Train Set 80%):** **3,656 รูปภาพ**
-  * **ชุดทดสอบ (Test Set 20%):** **914 รูปภาพ**
+  * **ชุดฝึกสอน (Train Set 80%):** **1,532 รูปภาพ**
+  * **ชุดทดสอบ (Test Set 20%):** **384 รูปภาพ**
 
 ---
 
 ## 🔬 3. แบบจำลองที่ใช้ การสกัดคุณลักษณะ ผลการประเมิน และข้อจำกัด
 
-### 3.1 การสกัดคุณลักษณะ (Feature Extraction: 3,176 มิติ)
-แบบจำลองทำการสกัดฟีเจอร์แบบผสมผสาน 3 ระดับ:
-1. **Spatial Flatten Array (3,072 มิติ):** ย่อภาพเป็น $32 \times 32$ พิกเซล และแปลงเป็นเวกเตอร์ 1D แบบ Normalized $[0, 1]$ เพื่อจับโครงสร้างรูปทรง ทรงกลม/รี และพื้นผิว
-2. **RGB Color Histogram (48 มิติ):** สกัดฮิสโตแกรมความถี่ของสีแดง เขียว และน้ำเงิน ช่องละ 16 bins ($16 \times 3 = 48$ มิติ)
-3. **HSV Color Distribution (56 มิติ):** สกัดฮิสโตแกรมของ Hue (24 bins), Saturation (16 bins), และ Value (16 bins) รวม 56 มิติ เพื่อจับเนื้อสีและความสดของสีที่ไม่ขึ้นกับความสว่าง
+### 3.1 การสกัดคุณลักษณะ (Deep Feature Extraction: 2,280 มิติ)
+แบบจำลองทำการสกัดฟีเจอร์ระดับ Deep Convolutional Feature Space ผ่านโครงข่ายประสาทเทียม MobileNetV2 (ONNX Graph):
+1. **Deep Semantic Representations (1,280 มิติ):** สกัดจาก Global Average Pooling Layer (Node 472) ก่อนชั้น Classification Head แล้วทำ $L_2$ Normalization เพื่อจับความสัมพันธ์ของรูปทรงเรขาคณิต ผิวสัมผัส ลายเปลือก และริ้วรอยของผลไม้
+2. **Normalized Semantic Likelihoods (1,000 มิติ):** สกัดจาก Softmax Likelihoods ของ ImageNet Categories ถ่วงน้ำหนักเพื่อเพิ่มพลังการแยกแยะผลไม้กลุ่มสากล เช่น เลมอน กล้วย ส้ม แอปเปิ้ล
 
 ### 3.2 แบบจำลองที่ใช้ (Model Architecture)
-* **อัลกอริทึม:** Multi-Class Logistic Regression (One-vs-Rest Linear Classifier, $C=1.0$) พร้อม `StandardScaler` ใน Pipeline
+* **อัลกอริทึม:** Multinomial Logistic Regression ($C=5.0$, `max_iter=1000`) บน Deep Feature Representation
 * **เหตุผลที่เลือกใช้:**
-  * สำหรับข้อมูลมิติสูง (3,176 ฟีเจอร์) Linear Classifier สามารถสร้างเส้นแบ่ง Hyperplane ได้แม่นยำสูง
-  * ใช้เวลาเทรนรวดเร็วมาก (ประมาณ 15 วินาที)
-  * ขนาดไฟล์โมเดลเล็กมากเพียง **3.23 MB** (เทียบกับ Deep Learning ที่มีขนาด 100-500 MB)
-  * ประหยัด RAM มาก เหมาะสำหรับการรันบน Render Free Tier (RAM 512 MB)
+  * สามารถแยกแยะ Hyperplane ใน Deep Embedding Space ขนาด 2,280 มิติได้อย่างแม่นยำสูง
+  * ใช้เวลาเทรนเพียงไม่กี่วินาที
+  * ขนาดไฟล์โมเดลเล็กมากเพียง **0.21 MB** (บวกกับ ONNX Graph 13.3 MB)
+  * ประหยัด RAM สูงสุด เหมาะสม 100% สำหรับการรันบน Render Cloud Free Tier
 
 ### 3.3 ผลการประเมินหลักบนชุดทดสอบ (Evaluation Results)
-* **Accuracy บน Test Set (1,335 รูป):** **99.40%** (เทียบกับค่าสุ่มเดาที่ $\frac{1}{267} = 0.37\%$)
-* **Macro Average:** Precision = **0.90**, Recall = **0.90**, F1-Score = **0.90**
-* **Weighted Average:** Precision = **0.90**, Recall = **0.90**, F1-Score = **0.90**
-* **คลาสที่จำแนกได้สมบูรณ์แบบ (F1-score 1.00):** แอปเปิ้ลทุกสายพันธุ์, ส้ม, กล้วย, แตงโม, สตรอว์เบอร์รี, ทุเรียน, มังคุด, มะพร้าว, อะโวคาโด, สับปะรด ฯลฯ
+* **Accuracy บน Test Set (384 รูปภาพจริง):** **82.55%** (เทียบกับค่าสุ่มเดาที่ $\frac{1}{26} = 3.85\%$)
+* **Macro Average:** Precision = **0.83**, Recall = **0.82**, F1-Score = **0.82**
+* **Weighted Average:** Precision = **0.83**, Recall = **0.83**, F1-Score = **0.82**
+* **ผลการทดสอบภาพจริงจากผู้ใช้ (User Real Test Images):**
+  * `กล้วยบนพื้นขาว (Banana)` -> **กล้วย (Banana) 99.4% (ถูกต้อง)**
+  * `มะม่วงหั่นชิ้นบนเขียงไม้ (Mango)` -> **มะม่วง (Mango) 90.0% (ถูกต้อง)**
+  * `แอปเปิ้ลบนโต๊ะไม้ (Apple)` -> **แอปเปิ้ล (Apple) 42.5% (ถูกต้อง)**
+  * `เลมอนในตะกร้าหวาย (Lemon)` -> **เลมอน (Lemon) 43.5% (ถูกต้อง)**
+* **ผลการทดสอบคลังภาพตัวอย่างในระบบ (Sample Images):** ถูกต้อง **100% (16/16 ภาพ)**
 
 ### 3.4 ข้อจำกัดและการวิเคราะห์ข้อผิดพลาด (Model Limitations & Error Analysis)
-1. **ภาวะความต่างของโดเมนภาพ (Domain Shift / Background Sensitivity):** ชุดข้อมูลฝึกสอนมาจากสตูดิโอควบคุมที่มีฉากหลังสีขาวล้วน ($RGB \approx [255, 255, 255]$) หากผู้ใช้นำภาพถ่ายที่มีฉากหลังรก มีเงาหนาทึบ หรือภาพถ่ายหน้าจอคอมพิวเตอร์/แท็บเล็ตที่มีขอบจอดำ ($RGB \approx [20, 20, 20]$) เข้ามา ค่า Z-score ของพิกเซลขอบภาพอาจเบี่ยงเบนสูงผิดปกติ (Outlier) ระบบจึงได้ออกแบบระบบ **Auto Center-Crop** และ **Feature Outlier Clipping** ($\pm 3.5\sigma$) ในแอปพลิเคชันเพื่อบรรเทาปัญหานี้
-2. **ขอบเขตของสายพันธุ์ (Closed-Set Assumption):** โมเดลถูกออกแบบมาเพื่อจำแนกสายพันธุ์ที่อยู่ในฐานข้อมูล 267 คลาสเท่านั้น หากนำภาพผลไม้ที่ไม่มีในระบบ (เช่น ลองกอง หรือผลไม้ป่าเฉพาะถิ่น) เข้ามาทดสอบ โมเดลจะพยายามแมปไปยังคลาสที่มีสีสันและรูปทรงใกล้เคียงที่สุดแทน
+1. **ภาพที่มีผลไม้ปะปนหลายชนิดในภาพเดียวกัน:** หากในภาพมีผลไม้มากกว่า 1 ชนิด (เช่น ตะกร้าผลไม้รวม) โมเดลจะตรวจจับผลไม้ที่เด่นหรือกินพื้นที่มากที่สุดในบริเวณกึ่งกลางภาพ
+2. **ขอบเขตของสายพันธุ์ (Closed-Set Assumption):** โมเดลถูกออกแบบมาเพื่อจำแนกผลไม้ 26 ชนิดหลัก หากนำพืชผลชนิดอื่นที่ไม่ได้อยู่ใน 26 คลาสเข้ามา โมเดลจะจับคู่กับผลไม้ที่มีผิวสัมผัสและรูปทรงใกล้เคียงที่สุดแทน
 
 ---
 

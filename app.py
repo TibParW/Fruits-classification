@@ -38,8 +38,8 @@ if MODEL_FILE.exists():
 EMPTY_STATE_HTML = """
 <div style="background: var(--card-bg, #ffffff); border: 1px dashed var(--card-border, #cbd5e1); border-radius: 12px; padding: 32px 16px; text-align: center; color: var(--text-body, #334155);">
     <div style="font-size: 2.2rem; margin-bottom: 8px; opacity: 0.9;">🍎🍌🍊🍇🍉🍋🍓🍍🥭🍈🥥🍐🍒🥝🥑</div>
-    <div style="font-size: 1rem; font-weight: 700; color: var(--text-title, #0f172a); margin-bottom: 6px;">พร้อมวิเคราะห์ภาพผลไม้ 30 ชนิดยอดนิยม (ฝึกสอนด้วยภาพถ่ายจริง Fruit-262)</div>
-    <div style="font-size: 0.85rem; color: var(--text-muted, #64748b);">อัปโหลดรูปภาพด้านซ้าย หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อเริ่มการวิเคราะห์</div>
+    <div style="font-size: 1rem; font-weight: 700; color: var(--text-title, #0f172a); margin-bottom: 6px;">พร้อมวิเคราะห์ภาพผลไม้ 26 ชนิดยอดนิยม (ระบบ Deep Vision MobileNetV2)</div>
+    <div style="font-size: 0.85rem; color: var(--text-muted, #64748b);">อัปโหลดรูปภาพด้านซ้าย หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อเริ่มการวิเคราะห์ทันที</div>
 </div>
 """
 
@@ -317,10 +317,10 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             <span>v{__version__}</span>
         </div>
         <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 0 0 6px 0; letter-spacing: -0.02em;">
-            ระบบจำแนกชนิดผลไม้
+            ระบบจำแนกชนิดผลไม้ (Deep Vision AI)
         </h1>
         <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0; font-weight: 500;">
-            ระบบจำแนกผลไม้ 30 ชนิดยอดนิยม (ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล • สตรอว์เบอร์รี • บลูเบอร์รี • แตงโม • เสาวรส • สับปะรด • แก้วมังกร ฯลฯ ครบทุกผลไม้แท้ ไร้ผักปน)
+            ระบบจำแนกผลไม้ 26 ชนิดยอดนิยมด้วย MobileNetV2 Deep Features (ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล • สตรอว์เบอร์รี • แตงโม • เสาวรส • สับปะรด • แก้วมังกร • เลมอน ฯลฯ แม่นยำบนภาพถ่ายจริง ไร้ผักปน 100%)
         </p>
     </div>
     """)
@@ -330,9 +330,9 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             # คำอธิบายวิธีใช้งาน (User Guide Banner)
             gr.HTML("""
             <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.9rem; color: var(--text-body); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                <div>💡 <b style="color: var(--text-title);">วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ (รองรับภาพถ่ายจริงจากกล้องหรือ Google) หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
+                <div>💡 <b style="color: var(--text-title);">วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ (รองรับภาพถ่ายจริงจากกล้องหรือ Google ทุกมุมมอง) หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
                 <div style="font-size: 0.8rem; background: var(--highlight-bg); color: var(--highlight-text); font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(4, 120, 87, 0.2);">
-                    ✨ 30 ชนิดผลไม้ยอดนิยม (ภาพถ่ายจริง Fruit-262)
+                    ✨ Deep Vision AI (MobileNetV2 2,280 Dims)
                 </div>
             </div>
             """)
@@ -370,7 +370,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                                 interactive=False
                             )
                             output_thumb = gr.Image(
-                                label="Thumbnail ที่โมเดลอ่าน (32×32 px)",
+                                label="ภาพ Deep Vision Input (224×224 px)",
                                 height=130,
                                 interactive=False
                             )
@@ -389,6 +389,10 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                 ["sample_images/passionfruit.jpg", "square_1_1"],
                 ["sample_images/pineapple.jpg", "square_1_1"],
                 ["sample_images/dragonfruit.jpg", "square_1_1"],
+                ["sample_images/custard_apple.jpg", "square_1_1"],
+                ["sample_images/jackfruit.jpg", "square_1_1"],
+                ["sample_images/santol.jpg", "square_1_1"],
+                ["sample_images/longan.jpg", "square_1_1"],
             ]
             valid_samples = [s for s in sample_files if Path(s[0]).exists()]
             if valid_samples:
@@ -396,7 +400,7 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                     gr.Markdown(
                         "<div style='font-size: 0.88rem; color: var(--text-body, #334155); margin-bottom: 8px;'>"
                         "คลิกเลือกภาพผลไม้ตัวอย่างด้านล่างเพื่อทดสอบระบบได้ทันที: "
-                        "<b style='color: var(--text-title, #0f172a);'>ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล • สตรอว์เบอร์รี • แตงโม • เสาวรส • สับปะรด • แก้วมังกร</b>"
+                        "<b style='color: var(--text-title, #0f172a);'>ทุเรียน • มังคุด • เงาะ • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล • สตรอว์เบอร์รี • แตงโม • เสาวรส • สับปะรด • แก้วมังกร • ขนุน • น้อยหน่า • กระท้อน • ลำไย</b>"
                         "</div>"
                     )
                     gr.Examples(
