@@ -36,18 +36,25 @@ if MODEL_FILE.exists():
         print(f" เกิดข้อผิดพลาดในการโหลดโมเดล: {e}")
 
 EMPTY_STATE_HTML = """
-<div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 36px 16px; text-align: center; color: #64748b;">
-    <div style="font-size: 2.2rem; margin-bottom: 6px; opacity: 0.85;">🍎🍌🍊🍇🍉🍋🍓🍍🥭👑🔴🐲🍈🥥🍐🍒🌰🥝🥑</div>
-    <div style="font-size: 0.95rem; font-weight: 600; color: #334155;">พร้อมวิเคราะห์ภาพผลไม้และพืชผล 300 ชนิด</div>
-    <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 4px;">อัปโหลดรูปภาพทางซ้ายเพื่อเริ่มการวิเคราะห์อัตโนมัติ</div>
+<div style="background: var(--card-bg, #ffffff); border: 1px dashed var(--card-border, #cbd5e1); border-radius: 12px; padding: 32px 16px; text-align: center; color: var(--text-body, #334155);">
+    <div style="font-size: 2.2rem; margin-bottom: 8px; opacity: 0.9;">🍎🍌🍊🍇🍉🍋🍓🍍🥭🍈🥥🍐🍒🌰🥝🥑</div>
+    <div style="font-size: 1rem; font-weight: 700; color: var(--text-title, #0f172a); margin-bottom: 6px;">พร้อมวิเคราะห์ภาพผลไม้และพืชผล 300 ชนิด</div>
+    <div style="font-size: 0.85rem; color: var(--text-muted, #64748b);">อัปโหลดรูปภาพด้านซ้าย หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อเริ่มการวิเคราะห์</div>
 </div>
 """
 
 
 def predict_fruit(image: Image.Image):
-    """ฟังก์ชันทำนายผลสำหรับ Gradio"""
+    """ฟังก์ชันทำนายผลสำหรับ Gradio (พร้อมระบบย่อภาพขนาดใหญ่จากกล้องมือถืออัตโนมัติ)"""
     if image is None:
         return None, EMPTY_STATE_HTML, None
+
+    # ย่อภาพความละเอียดสูงจากกล้องมือถือทันที (แก้ปัญหาค้าง / โหลดนาน / RAM เต็มบน Render)
+    try:
+        image = image.copy()
+        image.thumbnail((640, 640), Image.Resampling.LANCZOS)
+    except Exception:
+        pass
 
     if model_data is None:
         error_html = """
@@ -86,29 +93,29 @@ def predict_fruit(image: Image.Image):
         display_name = thai_labels.get(cls_name, cls_name.capitalize())
         confidence_dict[display_name] = float(probabilities[idx])
 
-    # ภาพย่อ 64x64 สำหรับเทคนิคการประมวลผล
+    # ภาพย่อ 32x32 สำหรับเทคนิคการประมวลผล
     thumbnail_preview = image.convert("RGB").resize(img_size)
 
-    # สร้างการ์ดผลลัพธ์แบบ Minimal HTML
+    # สร้างการ์ดผลลัพธ์แบบ Dynamic Theme HTML (รองรับทั้ง Light และ Dark mode)
     top_label_th = thai_labels.get(pred_class, pred_class.capitalize())
-    model_type = model_data.get("model_type", "SVM").upper()
+    model_type = model_data.get("model_type", "Linear").upper()
 
     summary_html = f"""
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px -2px rgba(0,0,0,0.04); margin-bottom: 14px;">
-        <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin-bottom: 4px;">
+    <div style="background: var(--card-bg, #ffffff); border: 1px solid var(--card-border, #e2e8f0); border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px -2px rgba(0,0,0,0.06); margin-bottom: 14px;">
+        <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted, #64748b); margin-bottom: 4px;">
             ผลลัพธ์การจำแนก (Prediction)
         </div>
-        <div style="font-size: 1.6rem; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
+        <div style="font-size: 1.65rem; font-weight: 800; color: var(--text-title, #0f172a); margin-bottom: 10px;">
             {top_label_th}
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <span style="background: #ecfdf5; color: #047857; font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px;">
+            <span style="background: var(--highlight-bg, #ecfdf5); color: var(--highlight-text, #047857); font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(4, 120, 87, 0.2);">
                 ความมั่นใจ {pred_confidence:.1f}%
             </span>
-            <span style="background: #f1f5f9; color: #475569; font-size: 0.8rem; font-weight: 500; padding: 3px 10px; border-radius: 999px;">
+            <span style="background: var(--badge-bg, #f1f5f9); color: var(--badge-text, #334155); font-size: 0.82rem; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--card-border, #e2e8f0);">
                 โมเดล {model_type}
             </span>
-            <span style="background: #f1f5f9; color: #475569; font-size: 0.8rem; font-weight: 500; padding: 3px 10px; border-radius: 999px;">
+            <span style="background: var(--badge-bg, #f1f5f9); color: var(--badge-text, #334155); font-size: 0.82rem; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--card-border, #e2e8f0);">
                 {feature_mode} ({img_size[0]}×{img_size[1]} px)
             </span>
         </div>
@@ -119,61 +126,106 @@ def predict_fruit(image: Image.Image):
 
 
 
-# กำหนดสไตล์ Minimalist CSS
+# กำหนดสไตล์ Minimalist CSS รองรับทั้ง Light และ Dark Mode
 MINIMAL_CSS = """
 <style>
-/* ตั้งค่าขนาด Container ให้กึ่งกลางและไม่ยืดกว้างเกินไป */
+/* CSS Variables สำหรับรองรับทั้ง Light Mode และ Dark Mode (แก้ปัญหาตัวอักษรกลืนกับพื้นหลังในมือถือ 100%) */
+:root {
+    --app-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --text-title: #0f172a;
+    --text-body: #1e293b;
+    --text-muted: #475569;
+    --badge-bg: #f1f5f9;
+    --badge-text: #1e293b;
+    --highlight-bg: #ecfdf5;
+    --highlight-text: #047857;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --app-bg: #0b0f19;
+        --card-bg: #1e293b;
+        --card-border: #334155;
+        --text-title: #f8fafc;
+        --text-body: #e2e8f0;
+        --text-muted: #94a3b8;
+        --badge-bg: #334155;
+        --badge-text: #f1f5f9;
+        --highlight-bg: #064e3b;
+        --highlight-text: #6ee7b7;
+    }
+}
+
+.dark {
+    --app-bg: #0b0f19;
+    --card-bg: #1e293b;
+    --card-border: #334155;
+    --text-title: #f8fafc;
+    --text-body: #e2e8f0;
+    --text-muted: #94a3b8;
+    --badge-bg: #334155;
+    --badge-text: #f1f5f9;
+    --highlight-bg: #064e3b;
+    --highlight-text: #6ee7b7;
+}
+
+/* ตั้งค่าขนาด Container ให้กึ่งกลางและมี padding พอดี */
 .gradio-container {
     max-width: 900px !important;
     margin: 0 auto !important;
-    padding: 24px 16px !important;
+    padding: 16px 12px !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Prompt', sans-serif !important;
-    background-color: #fafbfc !important;
+    background-color: var(--app-bg) !important;
 }
 
-/* ปรับแต่งบล็อกการ์ดให้เรียบเนียน */
+/* บล็อกการ์ดพื้นฐาน */
 .block {
     border-radius: 14px !important;
-    border: 1px solid #e2e8f0 !important;
-    background: #ffffff !important;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid var(--card-border) !important;
+    background: var(--card-bg) !important;
 }
 
-/* ปุ่มสีเข้มสไตล์มินิมอล */
+/* ป้องกันตัวอักษรสีขาวกลืนกับพื้นหลัง */
+.block p, .block span, .block label, .block div {
+    color: var(--text-body);
+}
+
+/* ปรับแต่งปุ่มวิเคราะห์ภาพ */
 button.primary {
     background-color: #0f172a !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 10px !important;
-    font-size: 0.92rem !important;
-    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
     transition: all 0.2s ease !important;
 }
+.dark button.primary {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
 button.primary:hover {
-    background-color: #1e293b !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-1px) !important;
 }
 
-/* ซ่อนแถบฟุตเตอร์รกๆ */
+/* ซ่อนแถบฟุตเตอร์ */
 footer {
     display: none !important;
 }
 
-/* ตกแต่งส่วน Examples ให้เรียบเนียนสไตล์ Minimal */
+/* ปรับแต่งตัวอย่างภาพ */
 .gallery {
     border: none !important;
     background: transparent !important;
 }
 .gallery button {
     border-radius: 10px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--card-border) !important;
     overflow: hidden !important;
     transition: all 0.2s ease !important;
-}
-.gallery button:hover {
-    border-color: #0f172a !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
 }
 </style>
 """
@@ -185,16 +237,16 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
 
     # Minimal Header
     gr.HTML(f"""
-    <div style="text-align: center; margin-bottom: 1.8rem; margin-top: 0.5rem;">
-        <div style="display: inline-flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 4px 14px; border-radius: 999px; font-size: 0.8rem; color: #475569; font-weight: 500; margin-bottom: 10px;">
+    <div style="text-align: center; margin-bottom: 1.6rem; margin-top: 0.5rem;">
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--badge-bg); padding: 5px 16px; border-radius: 999px; font-size: 0.82rem; color: var(--text-title); font-weight: 600; margin-bottom: 10px; border: 1px solid var(--card-border);">
             <span>🍎 Fruit Classifier</span>
             <span style="opacity: 0.4;">•</span>
             <span>v{__version__}</span>
         </div>
-        <h1 style="font-size: 1.85rem; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; letter-spacing: -0.02em;">
+        <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 0 0 6px 0; letter-spacing: -0.02em;">
             ระบบจำแนกชนิดผลไม้
         </h1>
-        <p style="color: #64748b; font-size: 0.92rem; margin: 0; font-weight: 400;">
+        <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0; font-weight: 500;">
             ระบบจำแนกผลไม้และพืชผลครอบคลุม 300 ชนิด (ทุเรียน • มังคุด • เงาะ • ขนุน • ลำไย • กระท้อน • น้อยหน่า • แก้วมังกร ฯลฯ ครบทุกสายพันธุ์)
         </p>
     </div>
@@ -204,9 +256,9 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
         with gr.TabItem("✨ จำแนกภาพผลไม้ (Classifier)"):
             # คำอธิบายวิธีใช้งาน (User Guide Banner)
             gr.HTML("""
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; font-size: 0.88rem; color: #475569; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                <div>💡 <b>วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
-                <div style="font-size: 0.78rem; background: #ecfdf5; color: #047857; font-weight: 600; padding: 3px 10px; border-radius: 999px;">
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.9rem; color: var(--text-body); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div>💡 <b style="color: var(--text-title);">วิธีใช้งาน:</b> อัปโหลดรูปภาพผลไม้ หรือคลิกเลือกภาพตัวอย่างด้านล่างเพื่อทดสอบจำแนกผลไม้ทันที (Auto-Predict)</div>
+                <div style="font-size: 0.8rem; background: var(--highlight-bg); color: var(--highlight-text); font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(4, 120, 87, 0.2);">
                     ✨ 300 ชนิดผลไม้ & พืชผล
                 </div>
             </div>
@@ -255,9 +307,9 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             if valid_samples:
                 with gr.Accordion("📁 ภาพตัวอย่างสำหรับทดสอบ (Click Sample Image to Test)", open=True):
                     gr.Markdown(
-                        "<div style='font-size: 0.85rem; color: #64748b; margin-bottom: 8px;'>"
+                        "<div style='font-size: 0.88rem; color: var(--text-body, #334155); margin-bottom: 8px;'>"
                         "คลิกเลือกภาพผลไม้ตัวอย่างด้านล่างเพื่อทดสอบระบบได้ทันที: "
-                        "<b>ทุเรียน • มังคุด • เงาะ • ขนุน • ลำไย • กระท้อน • น้อยหน่า • แก้วมังกร • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล</b>"
+                        "<b style='color: var(--text-title, #0f172a);'>ทุเรียน • มังคุด • เงาะ • ขนุน • ลำไย • กระท้อน • น้อยหน่า • แก้วมังกร • มะม่วง • มะพร้าว • กล้วย • แอปเปิ้ล</b>"
                         "</div>"
                     )
                     gr.Examples(
@@ -273,12 +325,14 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
             predict_btn.click(
                 fn=predict_fruit,
                 inputs=input_image,
-                outputs=[output_label, output_summary, output_thumb]
+                outputs=[output_label, output_summary, output_thumb],
+                show_progress="minimal"
             )
             input_image.change(
                 fn=predict_fruit,
                 inputs=input_image,
-                outputs=[output_label, output_summary, output_thumb]
+                outputs=[output_label, output_summary, output_thumb],
+                show_progress="minimal"
             )
 
         with gr.TabItem("📊 ประสิทธิภาพโมเดล (Metrics)"):
@@ -307,6 +361,9 @@ with gr.Blocks(title=f"Fruit Classifier v{__version__}") as demo:
                         interactive=False
                     )
 
+
+# ตั้งค่า Queue ให้รองรับหลายคำขอพร้อมกันโดยไม่ค้าง
+demo.queue(default_concurrency_limit=10)
 
 # Export top-level 'app' สำหรับ ASGI / Render / Vercel
 from fastapi import FastAPI
